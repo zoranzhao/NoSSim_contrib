@@ -130,11 +130,11 @@ class Nic : public sc_module {
 			recv_count++;
 			if(NodeID==0){
 				std::cout << "recv_count ============================="<<recv_count<<std::endl;
-				//for(int ii=0; ii<size_recv; ii++)
-				  //  {
+				for(int ii=0; ii<size_recv; ii++)
+				    {
 					//if((unsigned int)(data_recv[ii]) != ii) errorCount++;
-					//std::cout << ii << " : "<< (int)(data_recv[ii])<<std::endl;
-				    //}
+					std::cout << ii << " : "<< (data_recv[ii])<<std::endl;
+				    }
 				//std::cout << "recved size is ... ... ... : "<< recv_count <<std::endl;
 				//std::cout << " size_recv : "<< size_recv<<std::endl;
 
