@@ -45,6 +45,7 @@ void CliWrapper::initialize(int stage)
 {
     cSimpleModule::initialize(stage);
 
+
     if (stage == INITSTAGE_LOCAL) {
         reqLength = &par("reqLength");
         respLength = &par("respLength");
@@ -52,7 +53,7 @@ void CliWrapper::initialize(int stage)
 
         localSAP = par("localSAP");
         remoteSAP = par("remoteSAP");
-
+        clientID = par("clientID");
         seqNum = 0;
         WATCH(seqNum);
 
@@ -211,7 +212,7 @@ MACAddress CliWrapper::resolveDestMACAddress()
 
 
 
-    return  AddrNode0;
+    return  AddrAll;
 
 }
 

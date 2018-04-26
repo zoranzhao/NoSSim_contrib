@@ -50,6 +50,7 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
 
     int localSAP = -1;
     int remoteSAP = -1;
+    int clientID = 0;
     MACAddress destMACAddress;
     NodeStatus *nodeStatus = nullptr;
 
@@ -93,16 +94,16 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
 
     CliWrapper() 
     {
-	    reqLength = NULL;
-	    respLength = NULL;
-	    sendInterval = NULL;
-	    timerMsg = NULL;
-	    nodeStatus = NULL;
-	System = new artificial_example ("mix_taskset_cli", TotalClients); 
-	TotalClients++;
-	System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
+        reqLength = NULL;
+        respLength = NULL;
+        sendInterval = NULL;
+        timerMsg = NULL;
+        nodeStatus = NULL;
+        //clientID = par("clientID");
 	//System -> NetworkInterfaceCard2 -> OmnetWrapper = this;
-
+        System = new artificial_example ("mix_taskset_cli", TotalClients); 
+        TotalClients++;
+        System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
     }
     virtual ~CliWrapper();
 };
