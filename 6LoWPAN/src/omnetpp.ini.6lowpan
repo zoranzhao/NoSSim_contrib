@@ -1,0 +1,82 @@
+[General]
+network = Throughput
+scheduler-class = SC_Scheduler
+#cmdenv-output-file = omnetpp.log
+#debug-on-errors = true
+#tkenv-plugin-path = ../../../etc/plugins
+#record-eventlog = true
+
+**.constraintAreaMinX = 0m
+**.constraintAreaMinY = 0m
+**.constraintAreaMaxX = 600m
+**.constraintAreaMaxY = 600m
+**.constraintAreaMinZ = 0m
+**.constraintAreaMaxZ = 0m
+
+
+# positions
+**.mobility.initFromDisplayString = false
+**.mobility.initialY = 200m
+**.mobility.initialZ = 0m
+**.srvHost.mobility.initialX = 0m
+
+**.cliHost.mobility.initialX = 100m
+**.cliHost[0].mobility.initialX = 50m
+**.cliHost[1].mobility.initialX = 100m
+
+
+**.debug = true
+**.coreDebug = false
+**.channelNumber = 0
+#**.cliHost[0].cli.clientID = 0
+#**.cliHost[1].cli.clientID = 1
+
+#**.energyStorageType = "IdealEnergyStorage"
+#**.cliHost[*].wlan.radio.energyConsumerType = "StateBasedEnergyConsumer"
+#**.cliHost[*].wlan.radio.energyConsumer.offPowerConsumption = 0mW
+#**.cliHost[*].wlan.radio.energyConsumer.sleepPowerConsumption = 0mW
+#**.cliHost[*].wlan.radio.energyConsumer.switchingPowerConsumption = 0mW
+#**.cliHost[*].wlan.radio.energyConsumer.receiverIdlePowerConsumption = 0mW
+#**.cliHost[*].wlan.radio.energyConsumer.receiverBusyPowerConsumption = 0mW
+#**.cliHost[*].wlan.radio.energyConsumer.receiverReceivingPowerConsumption = 30mW
+#**.cliHost[*].wlan.radio.energyConsumer transmitterIdlePowerConsumption = 0mW
+#**.cliHost[*].wlan.radio.energyConsumer.transmitterTransmittingPowerConsumption = 60mW
+
+# access point
+**.mac.queueLength = 10000000
+**.srvHost.wlan.mac.address =    "00:10:00:00:00:00"
+**.cliHost[0].wlan.mac.address = "00:00:10:00:00:00"
+**.cliHost[1].wlan.mac.address = "00:00:00:10:00:00"
+**.cliHost[2].wlan.mac.address = "00:00:00:00:10:00"
+
+**.wlan.radio.transmitter.preambleDuration = 0
+
+#**.cliHost[3].wlan.mac.address = "00:00:10:00:00:00"
+#**.cliHost[4].wlan.mac.address = "00:00:00:10:00:00"
+#**.cliHost[5].wlan.mac.address = "00:00:00:00:10:00"
+#**.cliHost[6].wlan.mac.address = "00:00:10:00:00:00"
+#**.cliHost[7].wlan.mac.address = "00:00:00:10:00:00"
+#**.cliHost[8].wlan.mac.address = "00:00:00:00:10:00"
+#**.cliHost[9].wlan.mac.address = "00:00:10:00:00:00"
+#**.cliHost[10].wlan.mac.address = "00:00:00:10:00:00"
+#**.cliHost[11].wlan.mac.address = "00:00:00:00:10:00"
+#**.cliHost[12].wlan.mac.address = "00:00:10:00:00:00"
+#**.cliHost[13].wlan.mac.address = "00:00:00:10:00:00"
+#**.cliHost[14].wlan.mac.address = "00:00:00:00:10:00"
+#**.cliHost[15].wlan.mac.address = "00:00:00:00:10:00"
+
+# nic settings
+**.cli.AddrNode0 = "00:10:00:00:00:00"
+**.cli.AddrNode1 = "00:00:10:00:00:00"
+**.cli.AddrNode2 = "00:00:00:10:00:00"
+**.cli.AddrNode3 = "00:00:00:00:10:00"
+
+**.srv.AddrNode0 = "00:10:00:00:00:00"
+**.srv.AddrNode1 = "00:00:10:00:00:00"
+**.srv.AddrNode2 = "00:00:00:10:00:00"
+**.srv.AddrNode3 = "00:00:00:00:10:00"
+
+
+
+Throughput.numCli = 2
+

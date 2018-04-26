@@ -1,39 +1,21 @@
-//
-// Copyright (C) 2005 Andras Varga
-//
-// This program is free software; you can redistribute it and/or
-// modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; either version 2
-// of the License, or (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program; if not, write to the Free Software
-// Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-//
-
-
-//package .;
-
-
+//Interface module/wrapper between OMNET++ MAC/PHY layers and full system simulator 
 import NoS.applications.ethernet.CliWrapper;
 import NoS.applications.ethernet.SrvWrapper;
 
+//Energy model for power calculation
+import inet.power.contract.IEnergyStorage;
+import inet.power.contract.IEnergyGenerator;
+import inet.mobility.single.CircleMobility;
+import inet.mobility.static.StationaryMobility;
 
-
-
+//Header files of 802.11
+import inet.linklayer.ieee80211.Ieee80211Nic;
 import inet.mobility.single.CircleMobility;
 import inet.mobility.static.StationaryMobility;
 import inet.node.wireless.AccessPoint;
+import inet.physicallayer.ieee80211.packetlevel.Ieee80211ScalarRadioMedium;
 
-import inet.power.contract.IEnergyStorage;
-import inet.power.contract.IEnergyGenerator;
-
-
+//Header files of 802.15.4
 import inet.linklayer.ieee802154.Ieee802154NarrowbandNic;
 import inet.physicallayer.ieee802154.packetlevel.Ieee802154NarrowbandScalarRadioMedium;
 
@@ -67,18 +49,15 @@ module ThroughputClient
                 registerSAP = false;
                 @display("b=40,24;p=180,60,col");
         }
-        wlan: Ieee802154NarrowbandNic {
-           parameters:
-                @display("p=120,158;q=queue");
-        }
-
-        //wlan: Ieee80211Nic {
-        //    parameters:
-        //        @display("p=112,134;q=queue");
-        //        mgmtType = "Ieee80211MgmtSTASimplified";
+        //wlan: Ieee802154NarrowbandNic {
+        //   parameters:
+        //        @display("p=120,158;q=queue");
         //}
-
-
+        wlan: Ieee80211Nic {
+            parameters:
+                @display("p=112,134;q=queue");
+                mgmtType = "Ieee80211MgmtSTASimplified";
+        }
         mobility: StationaryMobility {
             parameters:
                 @display("p=50,141");
@@ -105,12 +84,6 @@ module ThroughputServer
         input radioIn @directIn;
 
     submodules:
-	//Old model
-        //notificationBoard: NotificationBoard {
-        //    parameters:
-        //        @display("p=60,70");
-        //}
-
         energyStorage: <energyStorageType> like IEnergyStorage if energyStorageType != "" {
             parameters:
                 @display("p=50,100;i=block/plug;is=s");
@@ -126,16 +99,16 @@ module ThroughputServer
                 @display("p=210,68,col");
         }
 
-        wlan: Ieee802154NarrowbandNic {
-           parameters:
-                @display("p=120,158;q=queue");
-        }
-
-        //wlan: Ieee80211Nic {
+        //wlan: Ieee802154NarrowbandNic {
         //   parameters:
         //        @display("p=120,158;q=queue");
-        //        mgmtType = "Ieee80211MgmtSTASimplified";
         //}
+
+        wlan: Ieee80211Nic {
+           parameters:
+                @display("p=120,158;q=queue");
+                mgmtType = "Ieee80211MgmtSTASimplified";
+        }
         mobility: StationaryMobility {
             parameters:
                 @display("p=50,141");
@@ -160,18 +133,18 @@ network Throughput
             parameters:
                 @display("p=150,150;r=,,#707070");
         }
-        //ap: AccessPoint {
-        //    parameters:
-        //        @display("p=200,200;r=,,#707070");
-        //        wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
-        //}
-        radioMedium: Ieee802154NarrowbandScalarRadioMedium {
+        ap: AccessPoint {
+            parameters:
+                @display("p=200,200;r=,,#707070");
+                wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
+        }
+        radioMedium: Ieee80211ScalarRadioMedium {
             parameters:
                 @display("p=61,46");
         }
-        //radioMedium: Ieee80211ScalarRadioMedium {
+        //radioMedium: Ieee802154NarrowbandScalarRadioMedium {
         //    parameters:
-        //        @display("p=61,46");
+        //       @display("p=61,46");
         //}
 
 }
