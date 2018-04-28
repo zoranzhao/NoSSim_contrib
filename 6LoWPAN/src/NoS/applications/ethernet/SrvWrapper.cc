@@ -27,6 +27,12 @@
 #include "inet/common/lifecycle/NodeStatus.h"
 
 
+#include "inet/common/LayeredProtocolBase.h"
+#include "inet/common/ModuleAccess.h"
+#include "inet/linklayer/configurator/Ieee8021dInterfaceData.h"
+#include "inet/linklayer/ieee8021d/relay/Ieee8021dRelay.h"
+#include "inet/networklayer/common/InterfaceEntry.h"
+
 namespace inet {
 
 Define_Module(SrvWrapper);
@@ -102,8 +108,21 @@ void SrvWrapper::handleMessage(cMessage *msg)
     }
 
     EV << "Received packet `" << msg->getName() << "'\n";
-    EtherWrapperResp *req = check_and_cast<EtherWrapperResp *>(msg);
 
+    std::cout << "Received packet `" << msg->getName() << "'\n";
+
+
+    EtherFrame *frame = check_and_cast<EtherFrame *>(msg);
+
+
+
+
+    EtherWrapperResp *req = check_and_cast<EtherWrapperResp *>(frame->decapsulate());
+
+
+/*
+    EtherWrapperResp *req = check_and_cast<EtherWrapperResp *>(msg);
+*/
 
     //std::cout << "req->getRequestId()... ... ... :       "<< req->getRequestId()<<std::endl;
 
