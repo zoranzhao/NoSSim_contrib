@@ -212,7 +212,7 @@ MACAddress CliWrapper::resolveDestMACAddress()
 
 
 
-    return  AddrAll;
+    return  AddrNode0;
 
 }
 

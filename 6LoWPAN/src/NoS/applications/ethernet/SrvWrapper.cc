@@ -111,18 +111,14 @@ void SrvWrapper::handleMessage(cMessage *msg)
 
     std::cout << "Received packet `" << msg->getName() << "'\n";
 
-
-    EtherFrame *frame = check_and_cast<EtherFrame *>(msg);
-
-
-
-
-    EtherWrapperResp *req = check_and_cast<EtherWrapperResp *>(frame->decapsulate());
+//For packets recving in access point 
+//    EtherFrame *frame = check_and_cast<EtherFrame *>(msg);
+//    EtherWrapperResp *req = check_and_cast<EtherWrapperResp *>(frame->decapsulate());
+//
 
 
-/*
     EtherWrapperResp *req = check_and_cast<EtherWrapperResp *>(msg);
-*/
+
 
     //std::cout << "req->getRequestId()... ... ... :       "<< req->getRequestId()<<std::endl;
 

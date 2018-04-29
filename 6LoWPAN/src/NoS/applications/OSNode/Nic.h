@@ -124,16 +124,22 @@ class Nic : public sc_module {
 	{
 
 		int recv_count = 0;
+		int recv_count_1 = 0;
+		int recv_count_2 = 0;
 		while (1) {
 			//std::cout << "sc_core::wait(recvd); time is: " << sc_time_stamp().value() << std::endl;
 			wait(recvd);
 			recv_count++;
 			if(NodeID==0){
 				std::cout << "recv_count ============================="<<recv_count<<std::endl;
+				std::cout << "Node is " << " : "<< (data_recv[0])<<std::endl;
+				if(data_recv[0]=='1') recv_count_1++;
+				if(data_recv[0]=='2') recv_count_2++;
+				std::cout << recv_count_1 << " : "<< recv_count_2 <<std::endl;
 				for(int ii=0; ii<size_recv; ii++)
 				    {
 					//if((unsigned int)(data_recv[ii]) != ii) errorCount++;
-					std::cout << ii << " : "<< (data_recv[ii])<<std::endl;
+					//std::cout << ii << " : "<< (data_recv[ii])<<std::endl;
 				    }
 				//std::cout << "recved size is ... ... ... : "<< recv_count <<std::endl;
 				//std::cout << " size_recv : "<< size_recv<<std::endl;
