@@ -1,5 +1,5 @@
 [General]
-network = Throughput
+network = Cluster
 scheduler-class = SC_Scheduler
 #cmdenv-output-file = omnetpp.log
 #debug-on-errors = true
@@ -113,5 +113,5 @@ scheduler-class = SC_Scheduler
 **.receiver.energyDetection = -100dBm
 **.receiver.sensitivity = -100dBm
 
-Throughput.numCli = 1
+Cluster.numCli = 1
 

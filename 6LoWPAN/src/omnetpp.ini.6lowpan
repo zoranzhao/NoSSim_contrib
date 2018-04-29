@@ -1,5 +1,5 @@
 [General]
-network = Throughput
+network = Cluster
 scheduler-class = SC_Scheduler
 #cmdenv-output-file = omnetpp.log
 #debug-on-errors = true
@@ -78,5 +78,5 @@ scheduler-class = SC_Scheduler
 
 
 
-Throughput.numCli = 2
+Cluster.numCli = 2
 
