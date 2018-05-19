@@ -117,13 +117,14 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     int arrivalGate = frame->getArrivalGate()->getIndex();
     Ieee8021dInterfaceData *arrivalPortData = getPortInterfaceData(arrivalGate);
     learn(frame);
-
     // BPDU Handling
+/*
     if ((frame->getDest() == MACAddress::STP_MULTICAST_ADDRESS || frame->getDest() == bridgeAddress) && arrivalPortData->getRole() != Ieee8021dInterfaceData::DISABLED) {
         EV_DETAIL << "Deliver BPDU to the STP/RSTP module" << endl;
         deliverBPDU(frame);    // deliver to the STP/RSTP module
     }
     else if (isStpAware && !arrivalPortData->isForwarding()) {
+        std::cout << "3333333333333333" << std::endl;
         EV_INFO << "The arrival port is not forwarding! Discarding it!" << endl;
         numDroppedFrames++;
         delete frame;
@@ -156,7 +157,7 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
                 delete frame;
             }
         }
-    }
+    }*/
 }
 
 void SmartAP::dispatch(EtherFrame *frame, unsigned int portNum)

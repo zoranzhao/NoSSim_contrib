@@ -54,7 +54,7 @@ checkmakefiles:
 
 test:
 	export NEDPATH=$$NEDPATH:.:$(INET_DIR)/src && \
-	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini # -u Cmdenv
+	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini #-u Cmdenv
 
 # generate an include file that contains all the WITH_FEATURE macros according to the current enablement of features
 src/$(PKG_NAME)/features.h: $(wildcard .oppfeaturestate) .oppfeatures

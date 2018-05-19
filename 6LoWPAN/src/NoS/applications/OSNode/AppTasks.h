@@ -87,10 +87,10 @@ class IntrDriven_Task :public sc_core::sc_module
 	{
 
 	
-	  for(int i = 0; i < (IMG_NUM*100); i++){//Client running times 
+	  for(int i = 0; i < (IMG_NUM*10); i++){//Client running times 
 
 
-		size_send = 127;
+		size_send = 118;
 		data_send = (char *)malloc(size_send);
 	        printf("The number is %d\n", NodeID);
 		if(NodeID==1)

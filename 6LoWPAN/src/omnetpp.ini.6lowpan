@@ -49,6 +49,9 @@ scheduler-class = SC_Scheduler
 **.cliHost[1].wlan.mac.address = "00:00:00:10:00:00"
 **.cliHost[2].wlan.mac.address = "00:00:00:00:10:00"
 
+**.macMaxFrameRetries = 300
+**.macMaxCSMABackoffs = 301
+
 **.wlan.radio.transmitter.preambleDuration = 0
 
 #**.cliHost[3].wlan.mac.address = "00:00:10:00:00:00"
