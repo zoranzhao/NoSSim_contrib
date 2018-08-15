@@ -26,7 +26,7 @@
 #include "inet/common/ModuleAccess.h"
 
 
-int TotalClients = 1;
+int TotalClients = 0;
 long TotalPkt = 0;
 
 namespace inet {

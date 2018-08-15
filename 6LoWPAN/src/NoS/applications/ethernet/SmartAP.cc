@@ -90,6 +90,7 @@ void SmartAP::handleMessage(cMessage *msg)
             numReceivedNetworkFrames++;
             EV_INFO << "Received " << msg << " from network." << endl;
             EtherFrame *frame = check_and_cast<EtherFrame *>(msg);
+	    cPacket *pkt =  check_and_cast<cPacket *>(msg) ;
             emit(LayeredProtocolBase::packetReceivedFromLowerSignal, frame);
             handleAndDispatchFrame(frame);
         }
@@ -117,6 +118,22 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     int arrivalGate = frame->getArrivalGate()->getIndex();
     Ieee8021dInterfaceData *arrivalPortData = getPortInterfaceData(arrivalGate);
     learn(frame);
+    std::cout << "Recving infomation at AP ... ... ..." << std::endl;
+    std::cout << "IP Address of gateway is: " << bridgeAddress << std::endl;
+
+    std::cout << frame->getDest() << std::endl;
+    EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(frame->getEncapsulatedPacket());
+    char* image_buf;
+    int buf_size =    datapacket->getFileBufferArraySize();
+    image_buf = (char*) malloc(buf_size);
+
+    for(int ii=0; ii<buf_size; ii++){
+	image_buf[ii]=datapacket->getFileBuffer(ii);
+    }
+
+    
+
+
     // BPDU Handling
 /*
     if ((frame->getDest() == MACAddress::STP_MULTICAST_ADDRESS || frame->getDest() == bridgeAddress) && arrivalPortData->getRole() != Ieee8021dInterfaceData::DISABLED) {
@@ -158,6 +175,25 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
             }
         }
     }*/
+}
+
+void SmartAP::receivePacket(cPacket *msg)
+{
+    //if ((((LwipCntxt*)   (System->getLwipCtxt()) )->NodeID)==1)
+//    {std::cout<<" EtherMserCli::receivePacket"<<std::endl;}
+    EV << "Received packet `" << msg->getName() << "'\n";
+    cout << "................" << endl;
+
+    EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(msg);
+    char* image_buf;
+    int buf_size =    datapacket->getFileBufferArraySize();
+    image_buf = (char*) malloc(buf_size);
+
+    for(int ii=0; ii<buf_size; ii++){
+	image_buf[ii]=datapacket->getFileBuffer(ii);
+    }
+
+    //delete msg;
 }
 
 void SmartAP::dispatch(EtherFrame *frame, unsigned int portNum)

@@ -40,8 +40,8 @@ simple SmartAP like IMACRelayUnit
         @signal[packetSentToLower](type=cPacket);
         @signal[packetReceivedFromLower](type=cPacket);
     gates:
-        input ifIn[];
-        output ifOut[];
+        input ifIn[] @labels(Ieee802Ctrl/up);
+        output ifOut[] @labels(Ieee802Ctrl/up);
         input stpIn @loose;
         output stpOut @loose;
 }

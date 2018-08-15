@@ -61,35 +61,17 @@ class IntrDriven_Task :public sc_core::sc_module
 	char* data_recv;
 	int size_recv;
 	//int cli_send_pkt_number[CLI_NUM_MAX];
-
-
 	void recv_imgs()
 	{
-
-
-
 	  while(1){
-
-
-
-
 		size_recv = size_in -> read();
 		data_recv = data_in -> read();
-
-
-
 	  }//while(1)
 	}
-
-
-
 	void send_imgs()
 	{
-
 	
-	  for(int i = 0; i < (IMG_NUM*10); i++){//Client running times 
-
-
+	  for(int i = 0; i < (10); i++){//Client running times 
 		size_send = 118;
 		data_send = (char *)malloc(size_send);
 	        printf("The number is %d\n", NodeID);

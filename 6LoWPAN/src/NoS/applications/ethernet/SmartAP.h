@@ -26,6 +26,10 @@
 #include "inet/common/lifecycle/NodeStatus.h"
 #include "inet/linklayer/ieee8021d/common/Ieee8021dBPDU_m.h"
 
+#include "OSNode/top_module.h"
+#include "EtherWrapper_m.h"
+#include "OmnetIf_pkt.h"
+
 namespace inet {
 
 //
@@ -58,7 +62,7 @@ class INET_API SmartAP : public cSimpleModule, public ILifecycle
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void handleMessage(cMessage *msg) override;
-
+    virtual void receivePacket(cPacket *msg);
     /**
      * Updates address table (if the port is in learning state)
      * with source address, determines output port

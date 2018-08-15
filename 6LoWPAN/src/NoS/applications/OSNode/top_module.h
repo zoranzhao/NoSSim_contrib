@@ -46,19 +46,14 @@ class artificial_example
 	NetworkInterfaceCard1 -> data_out(data_recv_fifo1); 
 
 
-
-
-
            
     }    
-    ~artificial_example()
-    {
+    ~artificial_example(){
 	delete NetworkInterfaceCard1;
 	//delete NetworkInterfaceCard2;
     }
 
  private:
-
 
     IntrDriven_Task* intr_gen_1;
 
