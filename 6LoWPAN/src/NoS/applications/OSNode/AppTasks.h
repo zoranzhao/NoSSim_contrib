@@ -42,7 +42,8 @@ class IntrDriven_Task :public sc_core::sc_module
     :sc_core::sc_module(name)
     {
 	this->NodeID = NodeID;
-        SC_THREAD(run_jobs);
+        SC_THREAD(recv_imgs);
+        SC_THREAD(send_imgs);
 
     }
     
@@ -60,17 +61,19 @@ class IntrDriven_Task :public sc_core::sc_module
 	int size_send;
 	char* data_recv;
 	int size_recv;
-	//int cli_send_pkt_number[CLI_NUM_MAX];
+
 	void recv_imgs()
 	{
+
 	  while(1){
 		size_recv = size_in -> read();
 		data_recv = data_in -> read();
-	  }//while(1)
+	        std::cout << "Recvd at Node: "<< NodeID << ", size is: " << size_recv << std::endl;
+	  }
 	}
 	void send_imgs()
 	{
-	
+	  std::cout << "Sending at Node: "<< NodeID << std::endl;
 	  for(int i = 0; i < (10); i++){//Client running times 
 		size_send = 118;
 		data_send = (char *)malloc(size_send);
@@ -93,19 +96,14 @@ class IntrDriven_Task :public sc_core::sc_module
 
 
 
-		//Do something here ... ... ...
-
 	  }
 	}
 
 
 	void run_jobs(void)
 	{
-	   if(NodeID == 0)//server
 	   	recv_imgs();
-	   else
 		send_imgs();
-	   
 	}
 
 

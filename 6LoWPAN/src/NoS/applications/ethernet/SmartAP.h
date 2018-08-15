@@ -32,14 +32,15 @@
 
 namespace inet {
 
-//
-// This module forward frames (~EtherFrame) based on their destination MAC addresses to appropriate ports.
-// See the NED definition for details.
-//
 class INET_API SmartAP : public cSimpleModule, public ILifecycle
 {
   public:
-    SmartAP();
+    artificial_example *System; 
+    SmartAP(){
+        System = new artificial_example ("mix_taskset_cli", 6); 
+        System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
+    }
+
 
   protected:
     MACAddress bridgeAddress;
@@ -63,44 +64,20 @@ class INET_API SmartAP : public cSimpleModule, public ILifecycle
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void handleMessage(cMessage *msg) override;
     virtual void receivePacket(cPacket *msg);
-    /**
-     * Updates address table (if the port is in learning state)
-     * with source address, determines output port
-     * and sends out (or broadcasts) frame on ports
-     * (if the ports are in forwarding state).
-     * Includes calls to updateTableWithAddress() and getPortForAddress().
-     *
-     */
+    void sendAPPacket();
     void handleAndDispatchFrame(EtherFrame *frame);
     void dispatch(EtherFrame *frame, unsigned int portNum);
     void learn(EtherFrame *frame);
     void broadcast(EtherFrame *frame);
-
-    /**
-     * Receives BPDU from the STP/RSTP module and dispatch it to network.
-     * Sets EherFrame destination, source, etc. according to the BPDU's Ieee802Ctrl info.
-     */
     void dispatchBPDU(BPDU *bpdu);
 
-    /**
-     * Deliver BPDU to the STP/RSTP module.
-     * Sets the BPDU's Ieee802Ctrl info according to the arriving EtherFrame.
-     */
     void deliverBPDU(EtherFrame *frame);
 
-    // For lifecycle
     virtual void start();
     virtual void stop();
     bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
 
-    /*
-     * Gets port data from the InterfaceTable
-     */
     Ieee8021dInterfaceData *getPortInterfaceData(unsigned int portNum);
-
-    /*
-     * Returns the first non-loopback interface.
-     */
     virtual InterfaceEntry *chooseInterface();
     virtual void finish() override;
 };

@@ -191,7 +191,7 @@ void CliWrapper::cancelNextPacket()
 
 MACAddress CliWrapper::resolveDestMACAddress()
 {
-
+    MACAddress AP;
     MACAddress AddrNode0;
     MACAddress AddrNode1;
     MACAddress AddrNode2;
@@ -209,10 +209,10 @@ MACAddress CliWrapper::resolveDestMACAddress()
     AddrNode3.tryParse(addrNode3);
 
     AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
+    AP.tryParse("10:00:00:00:00:00");
 
 
-
-    return  AddrNode0;
+    return  AP;
 
 }
 

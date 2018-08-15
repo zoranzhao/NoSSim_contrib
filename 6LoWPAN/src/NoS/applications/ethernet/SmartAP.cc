@@ -26,9 +26,6 @@ namespace inet {
 
 Define_Module(SmartAP);
 
-SmartAP::SmartAP()
-{
-}
 
 void SmartAP::initialize(int stage)
 {
@@ -130,8 +127,12 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     for(int ii=0; ii<buf_size; ii++){
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
+        
+    if(frame->getDest() == bridgeAddress){
+	sendAPPacket();
+    }
 
-    
+
 
 
     // BPDU Handling
@@ -141,7 +142,7 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
         deliverBPDU(frame);    // deliver to the STP/RSTP module
     }
     else if (isStpAware && !arrivalPortData->isForwarding()) {
-        std::cout << "3333333333333333" << std::endl;
+
         EV_INFO << "The arrival port is not forwarding! Discarding it!" << endl;
         numDroppedFrames++;
         delete frame;
@@ -177,12 +178,50 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     }*/
 }
 
+void SmartAP::sendAPPacket()
+{
+    int lwip_pkt_size = 123;
+    int localSAP = 0xf0;
+    int remoteSAP = 0xf1;
+    EtherWrapperResp *datapacket = new EtherWrapperResp();
+    char msgname[30];
+    sprintf(msgname, "AP-msg");
+    datapacket->setName(msgname);   
+    datapacket->setRequestId(0);
+    Ieee802Ctrl *etherctrl = new Ieee802Ctrl();
+    etherctrl->setSsap(localSAP);
+    etherctrl->setDsap(remoteSAP);
+    etherctrl->setDest(MACAddress("00:10:00:00:00:00"));
+    datapacket->setControlInfo(etherctrl);
+
+    datapacket->setFileBufferArraySize(lwip_pkt_size);
+    datapacket->setByteLength(lwip_pkt_size);
+
+    Ieee802Ctrl *controlInfo = check_and_cast<Ieee802Ctrl *>(datapacket->removeControlInfo());
+    unsigned int portNum = 0;
+    MACAddress address = controlInfo->getDest();
+    delete controlInfo;
+
+    EthernetIIFrame *frame = new EthernetIIFrame(datapacket->getName());
+    frame->setSrc(bridgeAddress);
+    frame->setDest(address);
+    frame->setByteLength(ETHER_MAC_FRAME_BYTES);
+    frame->setEtherType(-1);
+    frame->encapsulate(datapacket);
+
+    if (frame->getByteLength() < MIN_ETHERNET_FRAME_BYTES)
+        frame->setByteLength(MIN_ETHERNET_FRAME_BYTES);
+
+    send(frame, "ifOut", portNum);    
+}
+
+
 void SmartAP::receivePacket(cPacket *msg)
 {
     //if ((((LwipCntxt*)   (System->getLwipCtxt()) )->NodeID)==1)
 //    {std::cout<<" EtherMserCli::receivePacket"<<std::endl;}
     EV << "Received packet `" << msg->getName() << "'\n";
-    cout << "................" << endl;
+
 
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(msg);
     char* image_buf;
