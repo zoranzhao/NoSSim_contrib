@@ -64,7 +64,7 @@ class INET_API SmartAP : public cSimpleModule, public ILifecycle
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void handleMessage(cMessage *msg) override;
     virtual void receivePacket(cPacket *msg);
-    void sendAPPacket();
+    void sendAPPacket(EtherWrapperResp * datapacket);
     void handleAndDispatchFrame(EtherFrame *frame);
     void dispatch(EtherFrame *frame, unsigned int portNum);
     void learn(EtherFrame *frame);

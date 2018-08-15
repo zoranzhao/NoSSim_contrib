@@ -212,7 +212,7 @@ MACAddress CliWrapper::resolveDestMACAddress()
     AP.tryParse("10:00:00:00:00:00");
 
 
-    return  AP;
+    return  AddrAll;
 
 }
 

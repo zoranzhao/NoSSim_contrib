@@ -30,9 +30,6 @@ Define_Module(SmartAP);
 void SmartAP::initialize(int stage)
 {
     if (stage == INITSTAGE_LOCAL) {
-        // statistics
-        numDispatchedBDPUFrames = numDispatchedNonBPDUFrames = numDeliveredBDPUsToSTP = 0;
-        numReceivedBPDUsFromSTP = numReceivedNetworkFrames = numDroppedFrames = 0;
 
         // number of ports
         portCount = gate("ifOut", 0)->size();
@@ -42,27 +39,16 @@ void SmartAP::initialize(int stage)
     else if (stage == INITSTAGE_LINK_LAYER_2) {
         NodeStatus *nodeStatus = dynamic_cast<NodeStatus *>(findContainingNode(this)->getSubmodule("status"));
         isOperational = (!nodeStatus) || nodeStatus->getState() == NodeStatus::UP;
-
         macTable = check_and_cast<IMACAddressTable *>(getModuleByPath(par("macTablePath")));
         ifTable = check_and_cast<IInterfaceTable *>(getModuleByPath(par("interfaceTablePath")));
-
         if (isOperational) {
             ie = chooseInterface();
-
             if (ie)
                 bridgeAddress = ie->getMacAddress(); // get the bridge's MAC address
             else
                 throw cRuntimeError("No non-loopback interface found!");
         }
-
         isStpAware = gate("stpIn")->isConnected();    // if the stpIn is not connected then the switch is STP/RSTP unaware
-
-        WATCH(bridgeAddress);
-        WATCH(numReceivedNetworkFrames);
-        WATCH(numDroppedFrames);
-        WATCH(numReceivedBPDUsFromSTP);
-        WATCH(numDeliveredBDPUsToSTP);
-        WATCH(numDispatchedNonBPDUFrames);
     }
 }
 
@@ -77,7 +63,6 @@ void SmartAP::handleMessage(cMessage *msg)
     if (!msg->isSelfMessage()) {
         // messages from STP process
         if (strcmp(msg->getArrivalGate()->getName(), "stpIn") == 0) {
-            numReceivedBPDUsFromSTP++;
             EV_INFO << "Received " << msg << " from STP/RSTP module." << endl;
             BPDU *bpdu = check_and_cast<BPDU *>(msg);
             dispatchBPDU(bpdu);
@@ -92,21 +77,31 @@ void SmartAP::handleMessage(cMessage *msg)
             handleAndDispatchFrame(frame);
         }
     }
-    else
-        throw cRuntimeError("This module doesn't handle self-messages!");
+    else{
+        if (strcmp(msg->getName(), "ServerToCli") == 0) {
+		int lwip_pkt_size = ((OmnetIf_pkt*)(msg->getContextPointer()))->getFileBufferArraySize();
+		EtherWrapperResp* datapacket = new EtherWrapperResp("lwip_msg", IEEE802CTRL_DATA);
+		datapacket->setFileBufferArraySize(lwip_pkt_size);
+		datapacket->setByteLength( lwip_pkt_size);
+		for(int ii=0; ii<lwip_pkt_size; ii++){
+			datapacket->setFileBuffer(ii, ((OmnetIf_pkt*)(msg->getContextPointer()))->getFileBuffer(ii));
+		}
+		sendAPPacket(datapacket);
+		System -> NetworkInterfaceCard1->notify_sending();
+
+
+	} 
+    }
+    
 }
 
 void SmartAP::broadcast(EtherFrame *frame)
 {
     EV_DETAIL << "Broadcast frame " << frame << endl;
-
     unsigned int arrivalGate = frame->getArrivalGate()->getIndex();
-
     for (unsigned int i = 0; i < portCount; i++)
         if (i != arrivalGate && (!isStpAware || getPortInterfaceData(i)->isForwarding()))
             dispatch(frame->dup(), i);
-
-
     delete frame;
 }
 
@@ -120,20 +115,15 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
 
     std::cout << frame->getDest() << std::endl;
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(frame->getEncapsulatedPacket());
+    
     char* image_buf;
     int buf_size =    datapacket->getFileBufferArraySize();
     image_buf = (char*) malloc(buf_size);
-
+    //printf("image_buf's buf_size is ....%d\n", buf_size);
     for(int ii=0; ii<buf_size; ii++){
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
-        
-    if(frame->getDest() == bridgeAddress){
-	sendAPPacket();
-    }
-
-
-
+    System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
 
     // BPDU Handling
 /*
@@ -178,12 +168,10 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     }*/
 }
 
-void SmartAP::sendAPPacket()
+void SmartAP::sendAPPacket(EtherWrapperResp * datapacket)
 {
-    int lwip_pkt_size = 123;
     int localSAP = 0xf0;
     int remoteSAP = 0xf1;
-    EtherWrapperResp *datapacket = new EtherWrapperResp();
     char msgname[30];
     sprintf(msgname, "AP-msg");
     datapacket->setName(msgname);   
@@ -191,11 +179,8 @@ void SmartAP::sendAPPacket()
     Ieee802Ctrl *etherctrl = new Ieee802Ctrl();
     etherctrl->setSsap(localSAP);
     etherctrl->setDsap(remoteSAP);
-    etherctrl->setDest(MACAddress("00:10:00:00:00:00"));
+    etherctrl->setDest(MACAddress("ff:ff:ff:ff:ff:ff"));
     datapacket->setControlInfo(etherctrl);
-
-    datapacket->setFileBufferArraySize(lwip_pkt_size);
-    datapacket->setByteLength(lwip_pkt_size);
 
     Ieee802Ctrl *controlInfo = check_and_cast<Ieee802Ctrl *>(datapacket->removeControlInfo());
     unsigned int portNum = 0;
