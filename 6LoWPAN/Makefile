@@ -1,12 +1,12 @@
 INET_DIR = /home/slam/OMNET/inet
-CONFIGNAME = clang-release
+CONFIGNAME = clang-debug
 PKG_NAME = NoS
 MODEL_EXE = INET
 
 .PHONY: all clean cleanall makefiles makefiles-so makefiles-lib makefiles-exe checkmakefiles doxy
 
 all: checkmakefiles src/$(PKG_NAME)/features.h 
-	cd src && $(MAKE) MODE=release all
+	cd src && $(MAKE) MODE=debug all
 
 clean: checkmakefiles
 	cd src && $(MAKE) clean
@@ -54,7 +54,7 @@ checkmakefiles:
 
 test:
 	export NEDPATH=$$NEDPATH:.:$(INET_DIR)/src && \
-	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini #-u Cmdenv
+	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini -u Cmdenv
 
 # generate an include file that contains all the WITH_FEATURE macros according to the current enablement of features
 src/$(PKG_NAME)/features.h: $(wildcard .oppfeaturestate) .oppfeatures

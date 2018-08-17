@@ -24,7 +24,6 @@
 #include "inet/linklayer/ethernet/EtherFrame_m.h"
 #include "inet/common/lifecycle/NodeOperations.h"
 #include "inet/common/lifecycle/NodeStatus.h"
-#include "inet/linklayer/ieee8021d/common/Ieee8021dBPDU_m.h"
 
 #include "OSNode/top_module.h"
 #include "EtherWrapper_m.h"
@@ -48,36 +47,20 @@ class INET_API SmartAP : public cSimpleModule, public ILifecycle
     IMACAddressTable *macTable = nullptr;
     InterfaceEntry *ie = nullptr;
     bool isOperational = false;
-    bool isStpAware = false;
     unsigned int portCount = 0;    // number of ports in the switch
 
-    // statistics: see finish() for details.
-    int numReceivedNetworkFrames = 0;
-    int numDroppedFrames = 0;
-    int numReceivedBPDUsFromSTP = 0;
-    int numDeliveredBDPUsToSTP = 0;
-    int numDispatchedNonBPDUFrames = 0;
-    int numDispatchedBDPUFrames = 0;
 
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
     virtual void handleMessage(cMessage *msg) override;
-    virtual void receivePacket(cPacket *msg);
     void sendAPPacket(EtherWrapperResp * datapacket);
     void handleAndDispatchFrame(EtherFrame *frame);
-    void dispatch(EtherFrame *frame, unsigned int portNum);
-    void learn(EtherFrame *frame);
-    void broadcast(EtherFrame *frame);
-    void dispatchBPDU(BPDU *bpdu);
-
-    void deliverBPDU(EtherFrame *frame);
 
     virtual void start();
     virtual void stop();
     bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
 
-    Ieee8021dInterfaceData *getPortInterfaceData(unsigned int portNum);
     virtual InterfaceEntry *chooseInterface();
     virtual void finish() override;
 };

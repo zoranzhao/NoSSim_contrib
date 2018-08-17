@@ -280,9 +280,6 @@ void CliWrapper::receivePacket(cPacket *msg)
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
     System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
-
-
-
     packetsReceived++;
     emit(rcvdPkSignal, msg);
     delete msg;
