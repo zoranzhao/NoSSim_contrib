@@ -63,8 +63,6 @@ void SmartAP::handleMessage(cMessage *msg)
         // messages from network
         if (strcmp(msg->getArrivalGate()->getName(), "ifIn") == 0) {
             EtherFrame *frame = check_and_cast<EtherFrame *>(msg);
-	    cPacket *pkt =  check_and_cast<cPacket *>(msg) ;
-            emit(LayeredProtocolBase::packetReceivedFromLowerSignal, frame);
             handleAndDispatchFrame(frame);
         }
     }
@@ -90,7 +88,7 @@ void SmartAP::handleMessage(cMessage *msg)
 
 void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
 {
-    int arrivalGate = frame->getArrivalGate()->getIndex();
+    //int arrivalGate = frame->getArrivalGate()->getIndex();
     std::cout << "Recving infomation at AP ... ... ..." << std::endl;
     std::cout << "IP Address of gateway is: " << bridgeAddress << std::endl;
 
