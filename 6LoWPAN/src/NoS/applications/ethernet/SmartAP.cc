@@ -78,7 +78,6 @@ void SmartAP::handleMessage(cMessage *msg)
 		sendAPPacket(datapacket);
 		System -> NetworkInterfaceCard1->notify_sending();
 		delete(msg);
-
 	} 
     }
     
@@ -98,7 +97,6 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     char* image_buf;
     int buf_size =    datapacket->getFileBufferArraySize();
     image_buf = (char*) malloc(buf_size);
-    //printf("image_buf's buf_size is ....%d\n", buf_size);
     for(int ii=0; ii<buf_size; ii++){
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
@@ -165,17 +163,12 @@ void SmartAP::stop()
 
 InterfaceEntry *SmartAP::chooseInterface()
 {
-    // TODO: Currently, we assume that the first non-loopback interface is an Ethernet interface
-    //       since relays work on EtherSwitches.
-    //       NOTE that, we don't check if the returning interface is an Ethernet interface!
     IInterfaceTable *ift = check_and_cast<IInterfaceTable *>(getModuleByPath(par("interfaceTablePath")));
-
     for (int i = 0; i < ift->getNumInterfaces(); i++) {
         InterfaceEntry *current = ift->getInterface(i);
         if (!current->isLoopback())
             return current;
     }
-
     return nullptr;
 }
 
