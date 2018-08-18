@@ -15,7 +15,6 @@ cleanall: checkmakefiles
 	@cd src && $(MAKE) MODE=release clean
 	@cd src && $(MAKE) MODE=debug clean
 	@rm -f src/Makefile src/$(PKG_NAME)/features.h
-	@rm -f src/results/*
 
 MAKEMAKE_OPTIONS := -f --deep -o $(MODEL_EXE) -O out --no-deep-includes -I. -I.. -I./NoS/applications -I./NoS/applications/OSNode \
 		 -I$$\(INET_PROJ\)/src/inet/applications/ethernet \
