@@ -15,6 +15,7 @@ cleanall: checkmakefiles
 	@cd src && $(MAKE) MODE=release clean
 	@cd src && $(MAKE) MODE=debug clean
 	@rm -f src/Makefile src/$(PKG_NAME)/features.h
+	@rm -f src/results/*
 
 MAKEMAKE_OPTIONS := -f --deep -o $(MODEL_EXE) -O out --no-deep-includes -I. -I.. -I./NoS/applications -I./NoS/applications/OSNode \
 		 -I$$\(INET_PROJ\)/src/inet/applications/ethernet \
@@ -54,7 +55,7 @@ checkmakefiles:
 
 test:
 	export NEDPATH=$$NEDPATH:.:$(INET_DIR)/src && \
-	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini -u Cmdenv
+	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini #-u Cmdenv
 
 # generate an include file that contains all the WITH_FEATURE macros according to the current enablement of features
 src/$(PKG_NAME)/features.h: $(wildcard .oppfeaturestate) .oppfeatures

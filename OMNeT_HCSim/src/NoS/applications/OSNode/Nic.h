@@ -1,17 +1,8 @@
-/*********************************************
- * Network Interface Card Model
- * Zhuoran Zhao, UT Austin, zhuoran@utexas.edu
- * Last update: July 2015
- ********************************************/
-
-#include <string.h>
-
 #include "OmnetIf_pkt.h"
 #include <omnetpp.h>
 #include <systemc>
 
 using namespace omnetpp;
-
 using namespace ::sc_core;
 using namespace ::std;
 
@@ -20,7 +11,6 @@ using namespace ::std;
 
 class Nic : public sc_module {
    public:
-
 	sc_core::sc_port< sc_fifo_out_if<int> > size_out;
 	sc_core::sc_port< sc_fifo_in_if<int> > size_in;
 
@@ -34,15 +24,11 @@ class Nic : public sc_module {
    	int recvd_flag; 
    	int sent_flag; 
 
-
 	char* data_send;
 	int size_send;
 	char* data_recv;
 	int size_recv;
 	cSimpleModule* OmnetWrapper;
-
-
-
 
 	SC_HAS_PROCESS(Nic);
 
@@ -60,26 +46,20 @@ class Nic : public sc_module {
 	  while (1) {
 		size_send = size_in -> read();
 		data_send = data_in -> read();
-
-
-    	        //std::cout << "Client sends images ... ... :::::" << NodeID <<std::endl;
 		cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
 		cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
 		OmnetIf_pkt* pkt = new OmnetIf_pkt();
 		pkt->setFileBufferArraySize(size_send);
 		for(int ii=0; ii<size_send; ii++){
-				pkt->setFileBuffer(ii, ((char*)data_send)[ii]);
+			pkt->setFileBuffer(ii, ((char*)data_send)[ii]);
 		}
-    	        //std::cout << "Client sends images ... ... :::::" << NodeID <<std::endl;
 		free(data_send);
-    	        //std::cout << "Client sends images ... ... :::::" << NodeID <<std::endl;
 		cMessage *startMsg = new cMessage("ServerToCli");
 		startMsg->setContextPointer(pkt);
 		wrapper->scheduleAt(simTime(), startMsg);  //Notify immediately
 		wait(this->sent);
 	  }
 	}
-
 	void NicRecv()
 	{
 		while (1) {
@@ -88,9 +68,6 @@ class Nic : public sc_module {
 			data_out -> write(data_recv);
 	    	}   
 	}
-
-
-
 	void notify_sending(){  
 		this->sent.notify(); 
 
@@ -101,10 +78,6 @@ class Nic : public sc_module {
 		size_recv = size;
 		recvd.notify(); 
 	}
-
-
-
-
 
 
 };

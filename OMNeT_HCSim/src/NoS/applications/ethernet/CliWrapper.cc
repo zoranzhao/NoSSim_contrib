@@ -85,37 +85,17 @@ void CliWrapper::handleMessage(cMessage *msg)
     if (!isNodeUp())
         throw cRuntimeError("Application is not running");
     if (msg->isSelfMessage()) {
-/*
-        if (msg->getKind() == START) {
-            bool registerSAP = par("registerSAP");
-            if (registerSAP)
-                registerDSAP(localSAP);
-
-            destMACAddress = resolveDestMACAddress();
-            // if no dest address given, nothing to do
-            if (destMACAddress.isUnspecified())
-                return;
-        }
-        sendPacket();
-        scheduleNextPacket(false);
-*/
-
         bool registerSAP = par("registerSAP");
         if (registerSAP)
             registerDSAP(localSAP);
         if (strcmp(msg->getName(), "ServerToCli") == 0) {
-		//std::cout<< "Client is getting a msg to be sent" <<std::endl;
 		lwip_pkt_size = ((OmnetIf_pkt*)(msg->getContextPointer()))->getFileBufferArraySize();
-
 		datapacket = new EtherWrapperResp("lwip_msg", IEEE802CTRL_DATA);
 		datapacket->setFileBufferArraySize(lwip_pkt_size);
 		datapacket->setByteLength( lwip_pkt_size);
-
-
 		for(unsigned int ii=0; ii<lwip_pkt_size; ii++){
 			datapacket->setFileBuffer(ii, ((OmnetIf_pkt*)(msg->getContextPointer()))->getFileBuffer(ii));
 		}
-
 		destMACAddress = resolveDestMACAddress();
 		if (destMACAddress.isUnspecified())
 		    return;
@@ -123,12 +103,6 @@ void CliWrapper::handleMessage(cMessage *msg)
 		System -> NetworkInterfaceCard1->notify_sending();		
 		delete msg; 
 	} 
-
-
-
-
-
-
     }
     else
         receivePacket(check_and_cast<cPacket *>(msg));
@@ -166,23 +140,7 @@ bool CliWrapper::isGenerator()
 {
     return par("destAddress").stringValue()[0];
 }
-/*
-void CliWrapper::scheduleNextPacket(bool start)
-{
-    simtime_t cur = simTime();
-    simtime_t next;
-    if (start) {
-        next = cur <= startTime ? startTime : cur;
-        timerMsg->setKind(START);
-    }
-    else {
-        next = cur + sendInterval->doubleValue();
-        timerMsg->setKind(NEXT);
-    }
-    if (stopTime < SIMTIME_ZERO || next < stopTime)
-        scheduleAt(next, timerMsg);
-}
-*/
+
 void CliWrapper::cancelNextPacket()
 {
     if (timerMsg)
@@ -266,16 +224,11 @@ void CliWrapper::sendPacket(cMessage *msg)
 
 void CliWrapper::receivePacket(cPacket *msg)
 {
-    //if ((((LwipCntxt*)   (System->getLwipCtxt()) )->NodeID)==1)
-//    {std::cout<<" EtherMserCli::receivePacket"<<std::endl;}
-    EV << "Received packet `" << msg->getName() << "'\n";
-
 
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(msg);
     char* image_buf;
     int buf_size =    datapacket->getFileBufferArraySize();
     image_buf = (char*) malloc(buf_size);
-    //printf("image_buf's buf_size is ....%d\n", buf_size);
     for(int ii=0; ii<buf_size; ii++){
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
