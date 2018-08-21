@@ -35,8 +35,8 @@ bool flag13=0;
 bool flag14=0;
 bool flag15=0;
 
-unsigned long cli_commu[CLI_NUM_MAX] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-int schd[CLI_NUM_MAX] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+unsigned long cli_commu[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int schd[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 
 void cli_wait(int NodeID){//wait for server to be available

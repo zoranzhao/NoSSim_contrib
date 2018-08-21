@@ -15,6 +15,7 @@
 //
 // Author: Benjamin Martin Seregi
 
+
 #ifndef __INET_SMARTAP_H
 #define __INET_SMARTAP_H
 
@@ -25,9 +26,9 @@
 #include "inet/common/lifecycle/NodeOperations.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 
-#include "OSNode/top_module.h"
 #include "EtherWrapper_m.h"
 #include "OmnetIf_pkt.h"
+#include "OSNode/top_module.h"
 
 namespace inet {
 
@@ -36,7 +37,7 @@ class INET_API SmartAP : public cSimpleModule, public ILifecycle
   public:
     artificial_example *System; 
     SmartAP(){
-        System = new artificial_example ("mix_taskset_cli", 6); 
+        System = new artificial_example ("mix_taskset_cli", 0); 
         System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
     }
 

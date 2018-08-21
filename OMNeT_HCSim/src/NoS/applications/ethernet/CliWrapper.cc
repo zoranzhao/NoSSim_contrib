@@ -114,7 +114,7 @@ bool CliWrapper::handleOperationStage(LifecycleOperation *operation, int stage, 
     if (dynamic_cast<NodeStartOperation *>(operation)) {
         if ((NodeStartOperation::Stage)stage == NodeStartOperation::STAGE_APPLICATION_LAYER && isGenerator())
 	    {
-		cout<<"handleOperationStage ... ... ... ... ..."<<endl;
+		std::cout<<"handleOperationStage ... ... ... ... ..."<<std::endl;
 		//scheduleNextPacket(true);
 	    }
     }

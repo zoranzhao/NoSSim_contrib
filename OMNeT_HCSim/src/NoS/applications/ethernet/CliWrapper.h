@@ -14,17 +14,16 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program; if not, see <http://www.gnu.org/licenses/>.
 //
+#include "OSNode/top_module.h"
 
 #ifndef __INET_CLIWRAPPER_H
 #define __INET_CLIWRAPPER_H
 
 #include "inet/common/INETDefs.h"
-
 #include "inet/linklayer/common/MACAddress.h"
 #include "inet/common/lifecycle/NodeStatus.h"
 #include "inet/common/lifecycle/ILifecycle.h"
 
-#include "OSNode/top_module.h"
 #include "EtherWrapper_m.h"
 #include "OmnetIf_pkt.h"
 
@@ -101,8 +100,8 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
         nodeStatus = NULL;
         //clientID = par("clientID");
 	//System -> NetworkInterfaceCard2 -> OmnetWrapper = this;
-        System = new artificial_example ("mix_taskset_cli", TotalClients); 
         TotalClients++;
+        System = new artificial_example ("mix_taskset_cli", TotalClients); 
         System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
     }
     virtual ~CliWrapper();

@@ -1,113 +1,174 @@
-/*********************************************                                                       
- * VisionGraph Tasks Based on Interrupt-Driven Task Model                                                                     
- * Zhuoran Zhao, UT Austin, zhuoran@utexas.edu                                                    
- * Last update: July 2016                                                                            
- ********************************************/
-#include <omnetpp.h>
-#include <systemc>
+#include "HCSim.h"
+#include "lwip_ctxt.h"
 
-#ifndef SC_VISION_TASK__H
-#define SC_VISION_TASK__H
+#include "netif/hcsim_if.h"
+#include "annotation.h"
+#include "OmnetIf_pkt.h"
+#include "app_utils.h"
+#include "service_api.h"
 
-#define CLI_NUM_MAX 10
-#define CLI_NUM 6
-#define IMG_NUM 4
-extern unsigned long cli_commu[CLI_NUM_MAX];
-extern int schd[CLI_NUM_MAX];
-extern double CliEnergy[10];
+#ifndef SC_TASK_MODEL__H
+#define SC_TASK_MODEL__H
 
-void cli_wait(int NodeID);
-void srv_wait(int NodeID);
-void srv_send(int NodeID, int cliID);
-void cli_send(int NodeID, int cliID);
-void srv_send_dat(int NodeID,  int from_cliID, int cliID,  int image_count);
+#define PROTO TCP
 
+#define PORTNO 11111 //Service for job stealing and sharing
+#define SMART_GATEWAY 11112 //Service for a smart gateway 
+#define START_CTRL 11113 //Control the start and stop of a service
 
+void inline tcpip_init_done(void *arg);
+void inline recv_with_sock(void *arg);
+void inline send_with_sock(void *arg);
+void inline send_task(void *arg);
+void inline recv_task(void *arg);
+void inline send_data_all(raw_data *blob, ctrl_proto proto, int portno);
 
+void inline send_data_all(raw_data *blob, ctrl_proto proto, int portno){
+   ip_addr_t dstaddr;
+   int dest_id;   
+   OSModelCtxt* OSmodel = taskManager.getTaskCtxt( sc_core::sc_get_current_process_handle() );
+   if(OSmodel->NodeID == 1){dest_id = 0;}
+   else if(OSmodel->NodeID == 0){dest_id = 1;}
+#if IPV4_TASK
+   IP_ADDR4(&dstaddr, 192, 168, 0, 2 + dest_id);
+   send_data(blob, proto, ipaddr_ntoa(&dstaddr), portno);
+#elif IPV6_TASK//IPV4_TASK
+   IP_ADDR6(&dstaddr,  1, 2, 3, 4 + dest_id);
+   send_data(blob, proto, ipaddr_ntoa(&dstaddr), portno);
+#endif//IPV4_TASK
+}
 
-class IntrDriven_Task :public sc_core::sc_module
+void inline send_task(void *arg){
+   OSModelCtxt* OSmodel = taskManager.getTaskCtxt( sc_core::sc_get_current_process_handle() );
+   if(OSmodel->NodeID != 1){return;}
+   LwipCntxt *ctxt = (LwipCntxt *)arg;
+
+   ctrl_proto proto=PROTO;
+   raw_data* blob = write_file_to_raw_data("IN.JPG");
+   printf("blob->size%d \n", blob->size);
+   //send_data(blob,  proto, "192.168.0.2", PORTNO);
+   send_data_all(blob,  proto, PORTNO);
+}
+
+void inline recv_task(void *arg){
+   OSModelCtxt* OSmodel = taskManager.getTaskCtxt( sc_core::sc_get_current_process_handle() );
+   if(OSmodel->NodeID != 0){return;}
+   LwipCntxt *ctxt = (LwipCntxt *)arg;
+
+   ctrl_proto proto=PROTO;
+   int sock1 = service_init(PORTNO, proto);
+   raw_data* blob = recv_data(sock1, proto);
+   if(OSmodel->NodeID == 0){
+     write_raw_data_to_file("OUT0.JPG", blob);
+   }else if(OSmodel->NodeID == 1){
+     write_raw_data_to_file("OUT1.JPG", blob);
+   }
+   free_raw_data(blob);
+}
+
+class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_INIT 
 {
  public:
 
-
-    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > size_out;
-    sc_core::sc_port< sc_core::sc_fifo_in_if<int> > size_in;
-
-    sc_core::sc_port< sc_core::sc_fifo_out_if<char*> > data_out;
-    sc_core::sc_port< sc_core::sc_fifo_in_if<char*> > data_in;
-
+    sc_core::sc_vector< sc_core::sc_port< lwip_recv_if > > recv_port;
+    sc_core::sc_vector< sc_core::sc_port< lwip_send_if > > send_port;
+    sc_core::sc_port< HCSim::OSAPI > os_port;
+    void* g_ctxt;
 
     SC_HAS_PROCESS(IntrDriven_Task);
-    IntrDriven_Task(const sc_core::sc_module_name name, int NodeID)
+  	IntrDriven_Task(const sc_core::sc_module_name name, 
+            sc_dt::uint64 exe_cost, sc_dt::uint64 period, 
+            unsigned int priority, int id, uint8_t init_core,
+            sc_dt::uint64 end_sim_time, int NodeID)
     :sc_core::sc_module(name)
     {
+        this->exe_cost = exe_cost;
+        this->period = period;
+        this->priority = priority;
+        this->id = id;
+        this->end_sim_time = end_sim_time;
 	this->NodeID = NodeID;
-        SC_THREAD(recv_imgs);
-        SC_THREAD(send_imgs);
-
+        this->init_core = 1;
+	recv_port.init(2);
+	send_port.init(2);
+        SC_THREAD(run_jobs);
+        g_ctxt=new LwipCntxt();
+	((LwipCntxt* )g_ctxt) -> OSmodel = (new OSModelCtxt());
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->NodeID = NodeID;
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->flag_compute=0;
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->os_port(this->os_port);
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->recv_port[0](this->recv_port[0]);
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->recv_port[1](this->recv_port[1]);
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->send_port[0](this->send_port[0]);
+	((OSModelCtxt*)(((LwipCntxt* )g_ctxt)->OSmodel))->send_port[1](this->send_port[1]);	
     }
     
     ~IntrDriven_Task() {}
 
-
-
-
-
-
+    void OSTaskCreate(void){
+#if IPV4_TASK
+	IP_ADDR4(&((LwipCntxt* )g_ctxt)->gw, 192,168,0,1);
+	IP_ADDR4(&((LwipCntxt* )g_ctxt)->netmask, 255,255,255,0);
+	IP_ADDR4(&((LwipCntxt* )g_ctxt)->ipaddr, 192,168,0,NodeID+2);
+#elif IPV6_TASK//IPV4_TASK
+	IP_ADDR6(&((LwipCntxt* )g_ctxt)->ipaddr,  1, 2, 3, (4 + NodeID));
+#endif//IPV4_TASK
+	printf("Setting up NodeID %d ...\n", NodeID);
+	((LwipCntxt* )g_ctxt)->NodeID = NodeID;
+        os_task_id = os_port->taskCreate(sc_core::sc_gen_unique_name("intrdriven_task"), 
+                                HCSim::OS_RT_APERIODIC, priority, period, exe_cost, 
+                                HCSim::DEFAULT_TS, HCSim::ALL_CORES, init_core);
+    }
 
  private:
-	int NodeID;
-	char* data_send;
-	int size_send;
-	char* data_recv;
-	int size_recv;
+    int id;
+    uint8_t init_core;
+    sc_dt::uint64 exe_cost;
+    sc_dt::uint64 period;
+    unsigned int priority;
+    sc_dt::uint64 end_sim_time;
+    int os_task_id;
+    int NodeID;
 
-	void recv_imgs()
-	{
-
-	  while(1){
-		size_recv = size_in -> read();
-		data_recv = data_in -> read();
-	        std::cout << "Recvd at Node: "<< NodeID << ", size is: " << size_recv << std::endl;
-	  }
-	}
-	void send_imgs()
-	{
-	  std::cout << "Sending at Node: "<< NodeID << std::endl;
-	  for(int i = 0; i < (10); i++){//Client running times 
-		size_send = 118;
-		data_send = (char *)malloc(size_send);
-	        printf("The number is %d\n", NodeID);
-		if(NodeID==1)
-			data_send[0]='1';
-		if(NodeID==2)
-			data_send[0]='2';
-		data_send[1]='9';
-		data_send[2]='9';
-		data_send[3]='9';
-		data_send[4]='9';
-		data_send[5]='9';
-		data_send[6]='9';
-		data_send[7]='9';
-		data_send[8]='9';
-		data_send[9]='9';
-		size_out -> write(size_send);
-		data_out -> write(data_send);
-
-
-
-	  }
-	}
-
-
-	void run_jobs(void)
-	{
-	   	recv_imgs();
-		send_imgs();
-	}
-
-
-
+    void run_jobs(void)
+    {
+	os_port->taskActivate(os_task_id);
+	os_port->timeWait(0, os_task_id);
+	os_port->syncGlobalTime(os_task_id);
+        taskManager.registerTask( (OSModelCtxt*)(((LwipCntxt*)(g_ctxt))->OSmodel ), g_ctxt, os_task_id, sc_core::sc_get_current_process_handle());
+	tcpip_init(tcpip_init_done, g_ctxt);
+	printf("Applications started, NodeID is %d %d\n", ((LwipCntxt* )g_ctxt)->NodeID, taskManager.getTaskID(sc_core::sc_get_current_process_handle()));
+	printf("TCP/IP initialized.\n");
+	sys_thread_new("send_with_sock", send_task, ((LwipCntxt* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 0);
+	sys_thread_new("recv_with_sock", recv_task, ((LwipCntxt* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 1);
+        os_port->taskTerminate(os_task_id);
+    }
 };
 
-#endif // SC_VISION_TASK__H 
+
+void inline tcpip_init_done(void *arg){
+   LwipCntxt* ctxt = (LwipCntxt*)arg;
+#if IPV4_TASK
+   netif_set_default(
+		netif_add( &(ctxt->netif), (ip_2_ip4(&(ctxt->ipaddr))),	(ip_2_ip4(&(ctxt->netmask))), (ip_2_ip4(&(ctxt->gw))), NULL, hcsim_if_init, tcpip_input)
+   );
+   netif_set_up(&(ctxt->netif));
+#elif IPV6_TASK//IPV4_TASK
+#if LOWPAN6_TASK
+   netif_add(&(ctxt->netif), NULL, hcsim_if_init_6lowpan, tcpip_6lowpan_input);
+   lowpan6_set_pan_id(1);
+#else //LOWPAN6_TASK
+   netif_add(&(ctxt->netif), NULL, hcsim_if_init, tcpip_input);
+#endif //LOWPAN6_TASK
+   (ctxt->netif).ip6_autoconfig_enabled = 1;
+   netif_create_ip6_linklocal_address(&(ctxt->netif), 1);
+   netif_add_ip6_address(&(ctxt->netif), ip_2_ip6(&(ctxt->ipaddr)), NULL);
+   netif_set_default(&(ctxt->netif));
+   netif_set_up(&(ctxt->netif));
+   netif_ip6_addr_set_state(&(ctxt->netif), 0,  IP6_ADDR_PREFERRED);
+   netif_ip6_addr_set_state(&(ctxt->netif), 1,  IP6_ADDR_PREFERRED);
+#endif//IPV4_TASK   
+}
+
+#endif // SC_TASK_MODEL__H 
+
