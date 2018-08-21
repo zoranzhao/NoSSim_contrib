@@ -101,8 +101,8 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
         nodeStatus = NULL;
         //clientID = par("clientID");
 	//System -> NetworkInterfaceCard2 -> OmnetWrapper = this;
-        System = new artificial_example ("mix_taskset_cli", TotalClients); 
         TotalClients++;
+        System = new artificial_example ("mix_taskset_cli", TotalClients); 
         System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
     }
     virtual ~CliWrapper();

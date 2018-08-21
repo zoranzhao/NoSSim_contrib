@@ -166,7 +166,8 @@ MACAddress CliWrapper::resolveDestMACAddress()
     AddrNode2.tryParse(addrNode2);
     AddrNode3.tryParse(addrNode3);
 
-    AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
+    AddrAll.tryParse("00:10:00:00:00:00");
+    //AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
     AP.tryParse("10:00:00:00:00:00");
 
 

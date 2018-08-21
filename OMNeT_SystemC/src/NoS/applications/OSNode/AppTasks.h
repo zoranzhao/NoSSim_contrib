@@ -64,18 +64,24 @@ class IntrDriven_Task :public sc_core::sc_module
 
 	void recv_imgs()
 	{
-
+	  int count = 0;
 	  while(1){
 		size_recv = size_in -> read();
 		data_recv = data_in -> read();
-	        std::cout << "Recvd at Node: "<< NodeID << ", size is: " << size_recv << std::endl;
+		count ++;
+	        std::cout << "Recvd at Node: "<< NodeID << ", size is: " 
+			<< size_recv <<", total number is: "
+			<< count << std::endl;
 	  }
 	}
 	void send_imgs()
 	{
 	  std::cout << "Sending at Node: "<< NodeID << std::endl;
-	  for(int i = 0; i < (10); i++){//Client running times 
-		size_send = 118;
+          int total = 1000;
+	  if (NodeID==0) total = 6000;
+
+	  for(int i = 0; i < total; i++){//Client running times 
+		size_send = 20;
 		data_send = (char *)malloc(size_send);
 	        printf("The number is %d\n", NodeID);
 		if(NodeID==1)
@@ -94,8 +100,6 @@ class IntrDriven_Task :public sc_core::sc_module
 		size_out -> write(size_send);
 		data_out -> write(data_send);
 
-
-
 	  }
 	}
 
@@ -103,7 +107,7 @@ class IntrDriven_Task :public sc_core::sc_module
 	void run_jobs(void)
 	{
 	   	recv_imgs();
-		send_imgs();
+		if(NodeID!=0) send_imgs();
 	}
 
 

@@ -70,11 +70,11 @@ module SmartAccessPoint
                 @display("p=151,121");
         }
 
-        srv: SrvWrapper {
-            parameters:
-                registerSAP = false;
-                @display("p=210,68,col");
-        }
+        //srv: SrvWrapper {
+        //    parameters:
+        //        registerSAP = false;
+        //        @display("p=210,68,col");
+        //}
 
         wlan[numRadios]: <default("Ieee80211Nic")> like IWirelessNic {
             parameters:

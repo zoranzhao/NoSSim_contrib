@@ -203,9 +203,13 @@ MACAddress SrvWrapper::resolveDestMACAddress()
     AddrNode2.tryParse(addrNode2);
     AddrNode3.tryParse(addrNode3);
 
-    AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
-
-
+    //AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
+    if(packetsSent%6==0) AddrAll.tryParse("00:00:10:00:00:00");
+    if(packetsSent%6==1) AddrAll.tryParse("00:00:01:00:00:00");
+    if(packetsSent%6==2) AddrAll.tryParse("00:00:00:10:00:00");
+    if(packetsSent%6==3) AddrAll.tryParse("00:00:00:01:00:00"); 
+    if(packetsSent%6==4) AddrAll.tryParse("00:00:00:00:10:00");
+    if(packetsSent%6==5) AddrAll.tryParse("00:00:00:00:01:00");
 
     return   AddrAll;
 
