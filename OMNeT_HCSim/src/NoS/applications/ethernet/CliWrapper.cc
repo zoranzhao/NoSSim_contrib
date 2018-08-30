@@ -169,6 +169,9 @@ MACAddress CliWrapper::resolveDestMACAddress()
     AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
     AP.tryParse("10:00:00:00:00:00");
 
+    //The address is used in 6LowPAN test
+  
+    AddrAll.tryParse("00:10:00:00:00:00");
 
     return  AddrAll;
 
