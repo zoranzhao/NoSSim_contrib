@@ -8,24 +8,34 @@ scheduler-class = SC_Scheduler
 
 **.constraintAreaMinX = 0m
 **.constraintAreaMinY = 0m
-**.constraintAreaMaxX = 600m
-**.constraintAreaMaxY = 400m
+**.constraintAreaMaxX = 300m
+**.constraintAreaMaxY = 300m
 **.constraintAreaMinZ = 0m
 **.constraintAreaMaxZ = 0m
 
 
 # positions
 **.mobility.initFromDisplayString = false
-**.mobility.initialY = 200m
-**.mobility.initialZ = 0m
-**.srvHost.mobility.initialX = 0m
-**.ap.mobility.initialX =  50m
-**.cliHost[*].mobility.initialX = 0m
+**.cliHost[0].mobility.initialY = 70m
+**.cliHost[1].mobility.initialY = 70m
+**.cliHost[2].mobility.initialY = 70m
+**.cliHost[0].mobility.initialX = 100m
+**.cliHost[1].mobility.initialX = 150m
+**.cliHost[2].mobility.initialX = 200m
+**.cliHost[3].mobility.initialY = 230m
+**.cliHost[4].mobility.initialY = 230m
+**.cliHost[5].mobility.initialY = 230m
+**.cliHost[3].mobility.initialX = 100m
+**.cliHost[4].mobility.initialX = 150m
+**.cliHost[5].mobility.initialX = 200m
+**.ap.mobility.initialY =  150m
+**.ap.mobility.initialX =  150m
 
 
 **.debug = true
 **.coreDebug = false
 **.channelNumber = 0
+
 
 **.cliHost[*].wlan.radio.energyConsumerType = "StateBasedEnergyConsumer"
 **.cliHost[*].wlan.radio.energyConsumer.offPowerConsumption = 0mW
@@ -44,8 +54,8 @@ scheduler-class = SC_Scheduler
 
 # access point
 **.ap.wlan[*].mac.address = "10:00:00:00:00:00"
-**.srvHost.wlan.mac.address =    "00:10:00:00:00:00"
-**.cliHost[0].wlan.mac.address = "00:00:10:00:00:00"
+#**.srvHost.wlan.mac.address    = "00:10:00:00:00:00"
+**.cliHost[0].wlan.mac.address = "00:10:00:00:00:00"
 **.cliHost[1].wlan.mac.address = "00:00:00:10:00:00"
 **.cliHost[2].wlan.mac.address = "00:00:00:00:10:00"
 
