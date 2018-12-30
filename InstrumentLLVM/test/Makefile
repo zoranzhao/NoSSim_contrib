@@ -1,4 +1,4 @@
-INS_LIB = ../InstrumentLLVM/build/FunctionInstr/libLLVMFunctionInstr.so
+INS_LIB = ../build/FunctionInstr/libLLVMFunctionInstr.so
 LLVM_INSTR_PASS = -functionInstr
 INS_STAGE=annot#preprof#prof#annot
 
