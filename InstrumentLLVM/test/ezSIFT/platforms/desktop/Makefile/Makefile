@@ -5,7 +5,7 @@ EXECOBJA=image_match.o
 
 INC_DIR=../../../include/
 SRC_DIR=../../../src/
-APP_DIR=../../../examples/
+APP_DIR=../../../examples/image_match/
 EXEC=vgprah
 
 VPATH=$(INC_DIR):$(SRC_DIR):$(APP_DIR)
@@ -15,12 +15,12 @@ ALIB=lib${EXEC}.a
 OBJDIR=./obj/
 
 CC=gcc
-CXX=g++
+CXX=clang++
 AR=ar
 ARFLAGS=rcs
 OPTS=-Ofast
 LDFLAGS= -lm -pthread 
-COMMON= -Iinclude/ -Isrc/ 
+COMMON= -I$(INC_DIR) -I$(SRC_DIR)
 CFLAGS=-Wall -Wno-unknown-pragmas -Wfatal-errors -fPIC
 
 ifeq ($(DEBUG), 1) 
@@ -45,13 +45,16 @@ $(ALIB): $(OBJS)
 $(SLIB): $(OBJS)
 	$(CXX) $(CFLAGS) -shared $^ -o $@ $(LDFLAGS)
 
-$(OBJDIR)%.o: %.c $(DEPS)
+$(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@
 
 obj:
 	mkdir -p obj
 
+test:
+	./$(EXEC) ./data/img1.pgm ./data/img2.pgm
+
 .PHONY: clean
 
 clean:
-	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(OBJDIR)
+	rm -rf $(OBJS) $(SLIB) $(ALIB) $(EXEC) $(OBJDIR) *.ppm *.key
