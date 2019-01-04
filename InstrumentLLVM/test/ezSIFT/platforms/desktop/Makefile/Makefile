@@ -14,7 +14,7 @@ SLIB=lib${EXEC}.so
 ALIB=lib${EXEC}.a
 OBJDIR=./obj/
 
-CC=gcc
+CC=clang
 CXX=clang++
 AR=ar
 ARFLAGS=rcs
@@ -25,13 +25,13 @@ CFLAGS=-Wall -Wno-unknown-pragmas -Wfatal-errors -fPIC
 
 ifeq ($(DEBUG), 1) 
 OPTS=-O0 -g
-COMMON= -I$(INC_DIR) -I$(SRC_DIR)
 endif
 
 CFLAGS+=$(OPTS)
 
 EXECOBJ = $(addprefix $(OBJDIR), $(EXECOBJA))
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
+BYTECODES = $(OBJS:.o=.bc) 
 DEPS = $(wildcard $(SRC_DIR)/*.h) Makefile 
 
 all: obj $(SLIB) $(ALIB) $(EXEC)
@@ -52,6 +52,7 @@ obj:
 	mkdir -p obj
 
 test:
+	echo $(BYTECODES)
 	./$(EXEC) ./data/img1.pgm ./data/img2.pgm
 
 .PHONY: clean
