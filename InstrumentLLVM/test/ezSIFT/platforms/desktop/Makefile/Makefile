@@ -16,6 +16,9 @@ OBJDIR=./obj/
 
 CC=clang
 CXX=clang++
+LLVM_LINK=llvm-link-6.0
+LLVM_LLC=llc-6.0
+
 AR=ar
 ARFLAGS=rcs
 OPTS=-Ofast
@@ -47,6 +50,12 @@ $(SLIB): $(OBJS)
 
 $(OBJDIR)%.o: %.cpp $(DEPS)
 	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@
+
+$(OBJDIR)%.bc: %.cpp $(DEPS) 
+	$(CXX) -emit-llvm $(COMMON) $(CFLAGS) -c $< -o $@
+
+bytecode: $(BYTECODES)  
+	$(LLVM_LINK) $(BYTECODES) -o obj/all.bc	
 
 obj:
 	mkdir -p obj
