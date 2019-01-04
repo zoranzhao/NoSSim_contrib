@@ -14,10 +14,14 @@ SLIB=lib${EXEC}.so
 ALIB=lib${EXEC}.a
 OBJDIR=./obj/
 
-CC=clang
+LLVM_DIR=~/Desktop/llvm/install/bin
+CC=$(LLVM_DIR)/clang
 CXX=clang++
-LLVM_LINK=llvm-link-6.0
-LLVM_LLC=llc-6.0
+LLVM_LINK=$(LLVM_DIR)/llvm-link
+LLVM_LLC=$(LLVM_DIR)/llc-6.0
+INS_LIB = /home/slam/OMNET/NoSSim_contrib/InstrumentLLVM/build/FunctionInstr/libLLVMFunctionInstr.so
+LLVM_INSTR_PASS = -functionInstr
+INS_STAGE=prof#preprof#prof#annot
 
 AR=ar
 ARFLAGS=rcs
@@ -56,6 +60,9 @@ $(OBJDIR)%.bc: %.cpp $(DEPS)
 
 bytecode: $(BYTECODES)  
 	$(LLVM_LINK) $(BYTECODES) -o obj/all.bc	
+	$(LLVM_DIR)/opt -load $(INS_LIB) $(LLVM_INSTR_PASS) -libname=12 -InstruProf=$(INS_STAGE) < obj/all.bc > obj/instru.bc
+	$(LLVM_LLC) -filetype=obj obj/instru.bc -o all.o
+	
 
 obj:
 	mkdir -p obj
