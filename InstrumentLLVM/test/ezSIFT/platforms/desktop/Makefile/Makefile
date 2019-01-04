@@ -52,7 +52,6 @@ obj:
 	mkdir -p obj
 
 test:
-	echo $(BYTECODES)
 	./$(EXEC) ./data/img1.pgm ./data/img2.pgm
 
 .PHONY: clean
