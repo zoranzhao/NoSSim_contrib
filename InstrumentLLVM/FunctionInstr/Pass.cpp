@@ -175,28 +175,27 @@ void FunctionInstr::initializeCallbacks(Module &M) {
   IRBuilder<> IRB(M.getContext());
   // Initialize the callbacks.
   PapiInit = cast<Function>( M.getOrInsertFunction(
-      "program_start", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "program_start", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   PapiTerminate = cast<Function>( M.getOrInsertFunction(
-      "program_end", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "program_end", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   FuncCountBB = cast<Function>( M.getOrInsertFunction(
-      "CountBB", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "CountBB", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   PapiFuncEntry = cast<Function>( M.getOrInsertFunction(
-      "papi_instrument_func_entry", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "papi_instrument_func_entry", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   PapiFuncExit = cast<Function>( M.getOrInsertFunction(
-      "papi_instrument_func_exit", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "papi_instrument_func_exit", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
 
   BAStart = cast<Function>( M.getOrInsertFunction(
-      "program_start_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "program_start_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   BATerminate = cast<Function>( M.getOrInsertFunction(
-      "program_end_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "program_end_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   BACountBB = cast<Function>( M.getOrInsertFunction(
-      "CountBB_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "CountBB_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   BAFuncRecordBB = cast<Function>( M.getOrInsertFunction(
-      "RecordFuncBBs", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty(), nullptr));
+      "RecordFuncBBs", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   BAFuncDelay = cast<Function>( M.getOrInsertFunction(
       "FunctionDelay", IRB.getVoidTy(), IRB.getDoubleTy(), IRB.getDoubleTy(), IRB.getInt64Ty(), IRB.getInt64Ty(), 
-	IRB.getInt32Ty(),IRB.getInt32Ty(),
-	nullptr));
+	IRB.getInt32Ty(),IRB.getInt32Ty()));
 
 
 
@@ -376,5 +375,5 @@ bool FunctionInstr::runOnFunction(Function &F) {
 
 
 char FunctionInstr::ID = 0;
-static RegisterPass<FunctionInstr> Y("functionInstr", "functionInstr Pass", false, false);
+static RegisterPass<FunctionInstr> X("functionInstr", "functionInstr Pass", false, false);
 

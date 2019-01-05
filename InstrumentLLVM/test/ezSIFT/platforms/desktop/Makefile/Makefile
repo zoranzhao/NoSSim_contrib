@@ -16,9 +16,9 @@ OBJDIR=./obj/
 
 LLVM_DIR=~/Desktop/llvm/install/bin
 CC=$(LLVM_DIR)/clang
-CXX=clang++
+CXX=$(LLVM_DIR)/clang++
 LLVM_LINK=$(LLVM_DIR)/llvm-link
-LLVM_LLC=$(LLVM_DIR)/llc-6.0
+LLVM_LLC=$(LLVM_DIR)/llc
 INS_LIB = /home/slam/OMNET/NoSSim_contrib/InstrumentLLVM/build/FunctionInstr/libLLVMFunctionInstr.so
 LLVM_INSTR_PASS = -functionInstr
 INS_STAGE=prof#preprof#prof#annot
@@ -61,6 +61,7 @@ $(OBJDIR)%.bc: %.cpp $(DEPS)
 bytecode: $(BYTECODES)  
 	$(LLVM_LINK) $(BYTECODES) -o obj/all.bc	
 	$(LLVM_DIR)/opt -load $(INS_LIB) $(LLVM_INSTR_PASS) -libname=12 -InstruProf=$(INS_STAGE) < obj/all.bc > obj/instru.bc
+	#$(LLVM_DIR)/opt -load /home/slam/Desktop/llvm-pass-tutorial/build/skeleton/libSkeletonPass.so -skeletonPass < obj/all.bc > obj/instru.bc
 	$(LLVM_LLC) -filetype=obj obj/instru.bc -o all.o
 	
 
