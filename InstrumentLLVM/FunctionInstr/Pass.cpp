@@ -286,8 +286,8 @@ bool FunctionInstr::runOnFunction(Function &F) {
     exit(1);
   }
 
-  if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage)
-  	fprintf(f, "Ext Visible:%d:%d:%d:%s\n", (F.getLinkage() == llvm::GlobalValue::ExternalLinkage), libID, CurFunID, F.getName().data());
+  //if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage)
+  fprintf(f, "Ext Visible:%d:%d:%d:%s\n", (F.getLinkage() == llvm::GlobalValue::ExternalLinkage), libID, CurFunID, F.getName().data());
   fclose(f);
 
 
