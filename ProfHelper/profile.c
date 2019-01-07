@@ -5,8 +5,9 @@ static call_stack func_stack;
 
 static long bb_number;
 static double current;
+static double overhead;
 
-static inline double now(){
+static inline double now_sec(){
    struct timeval time;
    if (gettimeofday(&time,NULL)){
       return 0;
@@ -14,16 +15,24 @@ static inline double now(){
    return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
+static inline double now(){
+   struct timeval time;
+   if (gettimeofday(&time,NULL)){
+      return 0;
+   }
+   return (double)time.tv_sec * 1000000 + (double)time.tv_usec;
+}
+
 static void acc_time(){
    double pre_duration = now() - current;
    int pre_lib_id = func_stack.lib_id[func_stack.size-1];
    int pre_fun_id = func_stack.fun_id[func_stack.size-1];
-   lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration = lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration + pre_duration; 
+   lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration = lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration + pre_duration - overhead; 
 }
 
 static void save_profile(){
    int ii, jj;
-   FILE *f = fopen("time.prof", "w");
+   FILE *f = fopen("function_time.prof", "w");
    if (f == NULL){
       printf("Error opening file!\n");
       exit(1);
@@ -31,17 +40,19 @@ static void save_profile(){
    for(ii=0;ii<TOTAL_LIB;ii++){
       for(jj=0;jj<MAX_DEPTH;jj++){
          if(lib_prof_data[ii].funcs[jj].call_times!=0){
-            fprintf(f, "%d %d %ld %f %ld\n", ii, jj,
+            fprintf(f, "%d %d %ld %f\n", ii, jj,
                lib_prof_data[ii].funcs[jj].call_times,
-               lib_prof_data[ii].funcs[jj].total_duration,
-               lib_prof_data[ii].funcs[jj].total_bbs);
+               lib_prof_data[ii].funcs[jj].total_duration/
+                  ((double)lib_prof_data[ii].funcs[jj].call_times));
          }
       }
    }
    fclose(f);
+   printf("The overhead is %f micro seconds\n", overhead);
 }
 
 void count_bb(int lib_id, int fun_id){
+   printf("Counting dynamic BB numbers!");
    bb_number++;
 }
 
@@ -76,6 +87,14 @@ void program_start(int lib_id, int fun_id){
       }
    }
    func_stack.size=0;
+   /*Calculate the profiling overhead beforehand*/
+   function_start(0, 0);
+   function_exit(0, 0);
+   overhead = lib_prof_data[0].funcs[0].total_duration;
+   lib_prof_data[0].funcs[0].call_times=0;
+   lib_prof_data[0].funcs[0].total_duration=0;
+   /*Calculate the profiling overhead beforehand*/
+
    function_start(lib_id, fun_id);
 }
 
