@@ -1,5 +1,4 @@
 #include "profile.h"
-
 static prof_data lib_prof_data[TOTAL_LIB];
 static call_stack func_stack;
 
