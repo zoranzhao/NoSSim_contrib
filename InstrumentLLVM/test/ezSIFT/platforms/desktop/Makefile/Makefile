@@ -6,6 +6,7 @@ EXECOBJA=image_match.o
 INC_DIR=../../../include/
 SRC_DIR=../../../src/
 APP_DIR=../../../examples/image_match/
+HELPER_DIR=/home/slam/OMNET/NoSSim_contrib/ProfHelper
 EXEC=vgprah
 
 VPATH=$(INC_DIR):$(SRC_DIR):$(APP_DIR)
@@ -37,6 +38,8 @@ endif
 CFLAGS+=$(OPTS)
 
 EXECOBJ = $(addprefix $(OBJDIR), $(EXECOBJA))
+EXECBC = $(EXECOBJ:.o=.bc) 
+EXECCPP = $(EXECOBJA:.o=.cpp) 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 BYTECODES = $(OBJS:.o=.bc) 
 DEPS = $(wildcard $(SRC_DIR)/*.h) Makefile 
@@ -58,12 +61,16 @@ $(OBJDIR)%.o: %.cpp $(DEPS)
 $(OBJDIR)%.bc: %.cpp $(DEPS) 
 	$(CXX) -emit-llvm $(COMMON) $(CFLAGS) -c $< -o $@
 
-bytecode: $(BYTECODES)  
+profile: obj $(BYTECODES)  
 	$(LLVM_LINK) $(BYTECODES) -o obj/all.bc	
-	$(LLVM_DIR)/opt -load $(INS_LIB) $(LLVM_INSTR_PASS) -libname=12 -InstruProf=$(INS_STAGE) < obj/all.bc > obj/instru.bc
-	#$(LLVM_DIR)/opt -load /home/slam/Desktop/llvm-pass-tutorial/build/skeleton/libSkeletonPass.so -skeletonPass < obj/all.bc > obj/instru.bc
-	$(LLVM_LLC) -filetype=obj obj/instru.bc -o all.o
-	
+	$(LLVM_DIR)/opt -load $(INS_LIB) $(LLVM_INSTR_PASS) -libname=1 -InstruProf=$(INS_STAGE) < obj/all.bc > obj/instru.bc
+	$(LLVM_LLC) -filetype=obj obj/instru.bc -o obj/all.o
+	$(AR) $(ARFLAGS) $(ALIB) obj/all.o
+	$(CXX) -emit-llvm $(COMMON) $(CFLAGS) -c $(APP_DIR)$(EXECCPP) -o $(EXECBC)
+	$(LLVM_DIR)/opt -load $(INS_LIB) $(LLVM_INSTR_PASS) -libname=0 -InstruProf=$(INS_STAGE) < $(EXECBC) > obj/instru.bc
+	$(LLVM_LLC) -filetype=obj obj/instru.bc -o obj/all.o
+	$(CXX) $(COMMON) $(CFLAGS) obj/all.o -o $(EXEC) $(LDFLAGS) $(ALIB) -L$(HELPER_DIR) -lhelper
+
 
 obj:
 	mkdir -p obj
