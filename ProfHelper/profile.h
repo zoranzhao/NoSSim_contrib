@@ -19,11 +19,11 @@
 extern "C" {
 #endif
 
-void count_bb(int LibID, int FunID);
-void function_start(int LibID, int FunID);
-void function_exit(int LibID, int FunID);
-void program_start(int LibID, int FunID);
-void program_end(int LibID, int FunID);
+void count_bb(int lib_id, int fun_id);
+void function_start(int lib_id, int fun_id);
+void function_exit(int lib_id, int fun_id);
+void program_start(int lib_id, int fun_id);
+void program_end(int lib_id, int fun_id);
 
 typedef struct calling_stack {
   int fun_id[MAX_DEPTH];

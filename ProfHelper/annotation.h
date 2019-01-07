@@ -1,29 +1,19 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <climits>
+#include "profile.h"
 
-#include <vector>
-#include <pthread.h> 
-#include <papi.h>
-#include <cstdio>
-#include <cstdlib>
+#ifndef ANNOTATION_H
+#define ANNOTATION_H
+/*#define OS_MODEL*/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#ifndef __ANNOTATION__H
-#define __ANNOTATION__H
+void func_waitfor(double alpha, double delay, int lib_id, int fun_id);
+void simulation_start(int lib_id, int fun_id);
+void simulation_end(int lib_id, int fun_id);
 
-
-#define MAX_ALLOWED 15
-#define N 1
-#define MIN_GRANU 200000
-
-extern "C" void CountBB_BA(int LibID, int FunID);
-extern "C" void FunctionDelay(double alpha, long delay, int LibID, int FunID);
-extern "C" void program_start_BA(int LibID, int FunID);
-extern "C" void program_end_BA(int LibID, int FunID);
-extern "C" void RecordFuncBBs( int LibID, int FunID);
-
+#ifdef __cplusplus
+}//extern "C"
+#endif
 
 #endif
