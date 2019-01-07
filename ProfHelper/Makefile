@@ -1,26 +1,18 @@
 #################################################################
 #Helper files for instrumentation, profiling and back-annotation
 #################################################################
+HELPER_INC = -I. 
 
-HELPER=helper
-PROFILER=profile
-ANNOTATOR=annotation
-HELPER_INC =  -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings  -I. 
-
-####################################################################
-# SystemC Options
-####################################################################
-# SystemC path
 HELPER_INC:=$(HELPER_INC) $(DEFINES) 
 
-all: $(PROFILER).cpp $(ANNOTATOR).cpp
-	g++ -O3 $(HELPER_INC) -c  $(PROFILER).cpp -o $(PROFILER).o
-	g++ -O3 $(HELPER_INC) -c  $(ANNOTATOR).cpp -o $(ANNOTATOR).o 
-	/usr/bin/ar cr lib${HELPER}.a $(ANNOTATOR).o $(PROFILER).o
-	/usr/bin/ranlib lib${HELPER}.a
+all: profile.c profile.h annotation.c annotation.h
+	#g++ -O3 $(HELPER_INC) -c  annotation.c -o annotation.o
+	g++ -O3 $(HELPER_INC) -c  profile.c -o profile.o 
+	/usr/bin/ar cr libhelper.a profile.o #annotation.o
+	/usr/bin/ranlib libhelper.a
 
 clean:
-	rm -f *.o *.a *.ll *.log *.bc *~
+	rm -f *.o *.a *.log
 
 
 

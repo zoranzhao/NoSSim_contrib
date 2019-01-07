@@ -1,30 +1,27 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <climits>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <assert.h>
+#include <unistd.h>
+#include <float.h>
+#include <limits.h>
+#include <time.h>
 
-#include <vector>
-#include <pthread.h> 
-#include <papi.h>
-#include <cstdio>
-#include <cstdlib>
+#include <sys/time.h>
 
-#ifndef __PROFILE__H
-#define __PROFILE__H
+#ifndef PROFILE_H
+#define PROFILE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define MAX_ALLOWED 15
-#define N 1
-#define MIN_GRANU 200000
-
-extern "C" void CountBB(int LibID, int FunID);
-extern "C" void papi_instrument_func_entry(int LibID, int FunID);
-extern "C" void papi_instrument_func_exit(int LibID, int FunID);
-extern "C" void program_start(int LibID, int FunID);
-extern "C" void program_end(int LibID, int FunID);
-
-
+void count_bb(int LibID, int FunID);
+void function_start(int LibID, int FunID);
+void function_exit(int LibID, int FunID);
+void program_start(int LibID, int FunID);
+void program_end(int LibID, int FunID);
 
 typedef struct CallingTrackerStruct {
   int FunID[10000];//depth of calling stack
@@ -32,19 +29,18 @@ typedef struct CallingTrackerStruct {
   int NumFuncInExec;
 } CallingTracker;
 
-
-
 typedef struct FuncProfileData {
   long TotalBBs;
   long CallingTimes;
-  long TotalCycles;
+  double TotalCycles;
 } FuncProfData;
-
-
 
 typedef struct ProfileData {
   FuncProfData Funcs[10000]; //indexed by function ID
 } ProfData;
 
+#ifdef __cplusplus
+}//extern "C"
+#endif
 
 #endif

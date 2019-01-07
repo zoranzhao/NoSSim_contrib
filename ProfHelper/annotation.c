@@ -18,7 +18,6 @@ extern "C"{
 	}
 
 	void RecordFuncBBs( int LibID, int FunID){
-//At the entry of each function
 
 
 	    if(AnnotationTracker.NumFuncInExec!=0)
