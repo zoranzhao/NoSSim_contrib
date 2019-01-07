@@ -1,10 +1,10 @@
 #include "profile.h"
 
-ProfData LibProfData[20];
-CallingTracker Tracker;
+static ProfData LibProfData[20];
+static CallingTracker Tracker;
 
-long bb_number;
-double current;
+static long bb_number;
+static double current;
 
 static inline double now(){
    struct timeval time;
