@@ -12,6 +12,8 @@
 
 #ifndef PROFILE_H
 #define PROFILE_H
+#define TOTAL_LIB 20
+#define MAX_DEPTH 1000
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,8 +26,8 @@ void program_start(int LibID, int FunID);
 void program_end(int LibID, int FunID);
 
 typedef struct CallingTrackerStruct {
-  int FunID[10000];//depth of calling stack
-  int LibID[10000];//depth of calling stack
+  int FunID[MAX_DEPTH];//depth of calling stack
+  int LibID[MAX_DEPTH];//depth of calling stack
   int NumFuncInExec;
 } CallingTracker;
 
@@ -36,7 +38,7 @@ typedef struct FuncProfileData {
 } FuncProfData;
 
 typedef struct ProfileData {
-  FuncProfData Funcs[10000]; //indexed by function ID
+  FuncProfData Funcs[MAX_DEPTH]; //indexed by function ID
 } ProfData;
 
 #ifdef __cplusplus

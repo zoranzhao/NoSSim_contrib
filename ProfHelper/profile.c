@@ -23,13 +23,13 @@ static void acc_time(){
 
 static void save_profile(){
    int ii, jj;
-   FILE *f = fopen("ProfileData", "w");
+   FILE *f = fopen("time.prof", "w");
    if (f == NULL){
       printf("Error opening file!\n");
       exit(1);
    }
-   for(ii=0;ii<20;ii++){
-      for(jj=0;jj<10000;jj++){
+   for(ii=0;ii<TOTAL_LIB;ii++){
+      for(jj=0;jj<MAX_DEPTH;jj++){
          if(LibProfData[ii].Funcs[jj].CallingTimes!=0){
             fprintf(f, "%d %d %ld %f %ld\n", ii, jj,
                LibProfData[ii].Funcs[jj].CallingTimes,
@@ -68,8 +68,8 @@ void function_exit(int LibID, int FunID){
 
 void program_start(int LibID, int FunID){
    int ii,jj;
-   for(ii=0;ii<20;ii++){
-      for(jj=0;jj<10000;jj++){
+   for(ii=0;ii<TOTAL_LIB;ii++){
+      for(jj=0;jj<MAX_DEPTH;jj++){
          LibProfData[ii].Funcs[jj].CallingTimes=0;
          LibProfData[ii].Funcs[jj].TotalCycles=0;
       }
