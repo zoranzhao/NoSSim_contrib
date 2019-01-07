@@ -25,21 +25,21 @@ void function_exit(int LibID, int FunID);
 void program_start(int LibID, int FunID);
 void program_end(int LibID, int FunID);
 
-typedef struct CallingTrackerStruct {
-  int FunID[MAX_DEPTH];//depth of calling stack
-  int LibID[MAX_DEPTH];//depth of calling stack
-  int NumFuncInExec;
-} CallingTracker;
+typedef struct calling_stack {
+  int fun_id[MAX_DEPTH];
+  int lib_id[MAX_DEPTH];
+  int size;
+} call_stack;
 
-typedef struct FuncProfileData {
-  long TotalBBs;
-  long CallingTimes;
-  double TotalCycles;
-} FuncProfData;
+typedef struct func_profile_data {
+  long total_bbs;
+  long call_times;
+  double total_duration;
+} func_prof_data;
 
-typedef struct ProfileData {
-  FuncProfData Funcs[MAX_DEPTH]; //indexed by function ID
-} ProfData;
+typedef struct profile_data {
+  func_prof_data funcs[MAX_DEPTH]; //indexed by function ID
+} prof_data;
 
 #ifdef __cplusplus
 }//extern "C"
