@@ -179,11 +179,11 @@ void FunctionInstr::initializeCallbacks(Module &M) {
   PapiTerminate = cast<Function>( M.getOrInsertFunction(
       "program_end", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   FuncCountBB = cast<Function>( M.getOrInsertFunction(
-      "CountBB", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
+      "count_bb", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   PapiFuncEntry = cast<Function>( M.getOrInsertFunction(
-      "papi_instrument_func_entry", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
+      "function_start", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   PapiFuncExit = cast<Function>( M.getOrInsertFunction(
-      "papi_instrument_func_exit", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
+      "function_exit", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
 
   BAStart = cast<Function>( M.getOrInsertFunction(
       "program_start_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
