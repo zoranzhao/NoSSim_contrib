@@ -22,7 +22,7 @@ LLVM_LINK=$(LLVM_DIR)/llvm-link
 LLVM_LLC=$(LLVM_DIR)/llc
 INS_LIB = /home/slam/OMNET/NoSSim_contrib/InstrumentLLVM/build/FunctionInstr/libLLVMFunctionInstr.so
 LLVM_INSTR_PASS = -functionInstr
-INS_STAGE=prof#preprof#prof#annot
+INS_STAGE=annot#prof#annot
 
 AR=ar
 ARFLAGS=rcs
