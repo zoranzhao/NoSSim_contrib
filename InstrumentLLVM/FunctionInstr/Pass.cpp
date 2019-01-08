@@ -43,9 +43,7 @@ struct FunctionInstr : public FunctionPass{
   //Annotation Functions 
   Function *BAStart;
   Function *BATerminate;
-  Function *BACountBB;
   Function* BAFuncDelay; 
-  Function* BAFuncRecordBB;
 
   // Assign a unique ID number for each function 
   vector<StringRef> FunctionName;
@@ -186,16 +184,11 @@ void FunctionInstr::initializeCallbacks(Module &M) {
       "function_exit", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
 
   BAStart = cast<Function>( M.getOrInsertFunction(
-      "program_start_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
+      "simulation_start", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   BATerminate = cast<Function>( M.getOrInsertFunction(
-      "program_end_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
-  BACountBB = cast<Function>( M.getOrInsertFunction(
-      "CountBB_BA", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
-  BAFuncRecordBB = cast<Function>( M.getOrInsertFunction(
-      "RecordFuncBBs", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
+      "simulation_end", IRB.getVoidTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
   BAFuncDelay = cast<Function>( M.getOrInsertFunction(
-      "FunctionDelay", IRB.getVoidTy(), IRB.getDoubleTy(), IRB.getDoubleTy(), IRB.getInt64Ty(), IRB.getInt64Ty(), 
-	IRB.getInt32Ty(),IRB.getInt32Ty()));
+      "func_waitfor", IRB.getVoidTy(), IRB.getDoubleTy(), IRB.getDoubleTy(), IRB.getInt32Ty(),IRB.getInt32Ty()));
 
 
 
@@ -254,7 +247,6 @@ bool FunctionInstr::runOnFunction(Function &F) {
      IRBuilder<> IRB(BB.getFirstNonPHI());
      if(Instru == "profbb")
 	IRB.CreateCall(FuncCountBB, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
-     if(Instru == "annot" )IRB.CreateCall(BACountBB, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
    }
 
   }
@@ -332,8 +324,6 @@ bool FunctionInstr::runOnFunction(Function &F) {
       	  	IRBRet.CreateCall(BAFuncDelay, {
 			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
 			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
-			IRBRet.getInt64(LibAnnotData1[libID].Funcs[CurFunID].StaticCycles), 
-			IRBRet.getInt64(LibAnnotData2[libID].Funcs[CurFunID].StaticCycles), 
 			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 		IRBRet.CreateCall(BATerminate, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	 	//The calling order in result code will be the same as the order of CreateCall
@@ -347,8 +337,6 @@ bool FunctionInstr::runOnFunction(Function &F) {
    		IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
       	if((Instru == "prof") || (Instru == "preprof"))
    		IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
-	if(Instru == "annot" )
-   		IRB.CreateCall(BAFuncRecordBB, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
    	for (auto RetInst : RetVec) {
       	  IRBuilder<> IRBRet(RetInst);
       	  if((Instru == "profbb"))
@@ -359,9 +347,7 @@ bool FunctionInstr::runOnFunction(Function &F) {
       	  	IRBRet.CreateCall(BAFuncDelay, {
 			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
 			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
-			IRBRet.getInt64(LibAnnotData1[libID].Funcs[CurFunID].StaticCycles), 
-			IRBRet.getInt64(LibAnnotData2[libID].Funcs[CurFunID].StaticCycles), 
-			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)}); 
+			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
    	}
    }
   } 
