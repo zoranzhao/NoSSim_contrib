@@ -230,7 +230,8 @@ bool FunctionInstr::runOnFunction(Function &F) {
       	  	IRBRet.CreateCall(BAFuncDelay, {
 			ConstantFP::get(IRBRet.getContext(), APFloat( 1.0 )), 
 			ConstantFP::get(IRBRet.getContext(), APFloat( LibProfData[libID].Funcs[CurFunID].TotalCycles)), 
-			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});    
+			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});
+    
 		IRBRet.CreateCall(BATerminate, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	 	//The calling order in result code will be the same as the order of CreateCall
 	  }
@@ -238,15 +239,15 @@ bool FunctionInstr::runOnFunction(Function &F) {
 	
    }
    else{
-   	IRBuilder<> IRB(F.getEntryBlock().getFirstNonPHI());
-      	if((Instru == "profbb"))
-   		IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
-      	if((Instru == "prof") || (Instru == "preprof"))
-   		IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
-   	for (auto RetInst : RetVec) {
-      	  IRBuilder<> IRBRet(RetInst);
-      	  if((Instru == "profbb"))
-      	      IRBRet.CreateCall(PapiFuncExit, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
+      IRBuilder<> IRB(F.getEntryBlock().getFirstNonPHI());
+      if((Instru == "profbb"))
+         IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
+      if((Instru == "prof") || (Instru == "preprof"))
+         IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
+      for (auto RetInst : RetVec) {
+         IRBuilder<> IRBRet(RetInst);
+         if((Instru == "profbb"))
+            IRBRet.CreateCall(PapiFuncExit, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
       	  if((Instru == "prof") || (Instru == "preprof"))
       	      IRBRet.CreateCall(PapiFuncExit, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	  if(Instru == "annot" )
