@@ -26,7 +26,8 @@ static void acc_time(){
    double pre_duration = now() - current;
    int pre_lib_id = func_stack.lib_id[func_stack.size-1];
    int pre_fun_id = func_stack.fun_id[func_stack.size-1];
-   lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration = lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration + pre_duration - overhead; 
+   double delta_t = (pre_duration - overhead)>0?(pre_duration - overhead):0;
+   lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration = lib_prof_data[pre_lib_id].funcs[pre_fun_id].total_duration + delta_t; 
 }
 
 static void save_profile(){
