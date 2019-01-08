@@ -1,11 +1,5 @@
 #include "annotation.h"
-
 static double duration;
-
-void func_waitfor(double alpha, double delay, int lib_id, int fun_id);
-void simulation_start(int lib_id, int fun_id);
-void simulation_end(int lib_id, int fun_id);
-
 
 void func_waitfor(double alpha, double delay, int lib_id, int fun_id){
    duration += alpha*delay;
