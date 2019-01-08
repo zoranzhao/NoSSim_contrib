@@ -74,7 +74,6 @@ bool FunctionInstr::doInitialization(Module &M) {
 
   if(Instru == "prof"){
   	errs()<< "================== Profiling stage =================" << '\n';
-        LoadProf();
 	for(int ii=0;ii<20;ii++){
           for(int jj=0;jj<10000;jj++){
             if(LibProfData[ii].Funcs[jj].CallingTimes!=0)
@@ -87,6 +86,7 @@ bool FunctionInstr::doInitialization(Module &M) {
 
   if(Instru == "annot"){
   	errs()<< "================== Annotation stage =================" << '\n';
+        LoadProf();
   }
 
   ticket = 0;
