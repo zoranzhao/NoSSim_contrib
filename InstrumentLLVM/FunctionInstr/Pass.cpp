@@ -1,13 +1,10 @@
 #include "ProfileRecorder.h"
-#include "AnnotationRecorder.h"
 
 using namespace llvm;
 using namespace std;
 
 
 ProfData LibProfData[20];//Indexed by libID
-
-
 
 
 static cl::opt<string> libname("libname", cl::desc("Specify lib name under instrumentation"), cl::value_desc("libname"));
@@ -54,49 +51,36 @@ StringRef FunctionInstr::getPassName() const {
 }
 
 bool FunctionInstr::doInitialization(Module &M) {
-  if(Instru == "preprof"){
-  	errs()<< "================== Pre-Profiling stage =================" << '\n';
-  }
+
 
   if(Instru == "profbb"){
   	errs()<< "================== ProfilingBB stage =================" << '\n';
-        LoadProf();
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(LibProfData[ii].Funcs[jj].CallingTimes!=0)
-		errs()<<ii<<" "<<jj<<" "<< LibProfData[ii].Funcs[jj].CallingTimes<<" "
-		<< LibProfData[ii].Funcs[jj].TotalCycles << '\n';
-          }
-    	}
-
   }
 
 
   if(Instru == "prof"){
   	errs()<< "================== Profiling stage =================" << '\n';
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(LibProfData[ii].Funcs[jj].CallingTimes!=0)
-		errs()<<ii<<" "<<jj<<" "<< LibProfData[ii].Funcs[jj].CallingTimes<<" "
-		<< LibProfData[ii].Funcs[jj].TotalCycles << '\n';
-          }
-    	}
 
   }
 
   if(Instru == "annot"){
   	errs()<< "================== Annotation stage =================" << '\n';
         LoadProf();
+	for(int ii=0;ii<20;ii++){
+          for(int jj=0;jj<10000;jj++){
+            if(LibProfData[ii].Funcs[jj].CallingTimes!=0)
+		errs()<<ii<<" "<<jj<<" "<< LibProfData[ii].Funcs[jj].CallingTimes<<" "
+		<< LibProfData[ii].Funcs[jj].TotalCycles << '\n';
+          }
+    	}
   }
 
   ticket = 0;
-  FILE *f = fopen(("FunctionTable"+libname+".txt").c_str(), "w");
-  if (f == NULL)
-  {
-    printf("Error opening file!\n");
-    exit(1);
-  }
-  fclose(f);
+
+  std::ofstream outfile ("FunctionTable"+libname+".txt");
+  outfile.close();
+
+
   return true;
 }
 
@@ -183,37 +167,29 @@ bool FunctionInstr::runOnFunction(Function &F) {
 	
 
 //Record function lists for each library
-  FILE *f = fopen(("FunctionTable"+libname+".txt").c_str(), "a");
-  if (f == NULL)
-  {
-    printf("Error opening file!\n");
-    exit(1);
-  }
+   std::ofstream outfile;
 
-  //if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage)
-  fprintf(f, "Ext Visible:%d:%d:%d:%s\n", (F.getLinkage() == llvm::GlobalValue::ExternalLinkage), libID, CurFunID, F.getName().data());
-  fclose(f);
+   outfile.open("FunctionTable"+libname+".txt", std::ios_base::app);
+   outfile << "Ext Visible:" << (F.getLinkage() == llvm::GlobalValue::ExternalLinkage) << ":" << libID << ":" << CurFunID << ":" << F.getName().data() << "\n";
+   outfile.close();
+
+//We want to only annotated funtions available in source code
+   if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage){
 
 
-
-
-  if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage)//We want to only annotated funtions available in source code  
-  {
-
-
-   Res = true; //A true function should be returned if the function is modified
-   for (auto &BB : F) {
-     if(isa<LandingPadInst>(BB.getFirstNonPHI())) continue;//Skip exception handling code
-     IRBuilder<> IRB(BB.getFirstNonPHI());
-     for (auto &Inst : BB) {//Extract function exit points
-       if (isa<ReturnInst>(Inst))
-         RetVec.push_back(&Inst);
-     } 
-   }
+      Res = true; //A true function should be returned if the function is modified
+      for (auto &BB : F) {
+         if(isa<LandingPadInst>(BB.getFirstNonPHI())) continue;//Skip exception handling code
+         IRBuilder<> IRB(BB.getFirstNonPHI());
+         for (auto &Inst : BB) {//Extract function exit points
+            if (isa<ReturnInst>(Inst))
+            RetVec.push_back(&Inst);
+         } 
+      }
 
 
 
-   if((F.getName().equals(StringRef("main")))){
+      if((F.getName().equals(StringRef("main")))){
 	IRBuilder<> IRB(F.getEntryBlock().getFirstNonPHI());
         if((Instru == "profbb"))
 		IRB.CreateCall(PapiInit, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});
@@ -235,10 +211,9 @@ bool FunctionInstr::runOnFunction(Function &F) {
 		IRBRet.CreateCall(BATerminate, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	 	//The calling order in result code will be the same as the order of CreateCall
 	  }
-   	}
+      }
 	
-   }
-   else{
+   }else{
       IRBuilder<> IRB(F.getEntryBlock().getFirstNonPHI());
       if((Instru == "profbb"))
          IRB.CreateCall(PapiFuncEntry, {IRB.getInt32(libID), IRB.getInt32(CurFunID)});

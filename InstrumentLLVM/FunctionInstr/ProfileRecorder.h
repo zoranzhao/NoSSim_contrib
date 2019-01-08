@@ -36,16 +36,15 @@
 #include "llvm/Transforms/Instrumentation.h"
 
 
-#include <iostream>
 #include <fstream>
 #include <sstream>
-#include <string>
 
 
 #ifndef PROFILERECORDER__H 
 #define PROFILERECORDER__H 
 
-
+using namespace llvm;
+using namespace std;
 
 typedef struct FuncProfileData {
   long long TotalBBs;
@@ -75,14 +74,13 @@ void LoadProf(){
       }
    }
 
-   while (std::getline(infile, line))
-   {
+   while (std::getline(infile, line)){
       std::istringstream iss(line);
       int lib, func;
       long CallTimes;
       double Cycles;
-      if (!(iss >> lib >> func >> CallTimes >> Cycles)) { break; } // error
-      std::cout << lib << " " << func << " " << CallTimes << " " << Cycles;
+      if (!(iss >> lib >> func >> CallTimes >> Cycles)) { break; }
+      errs() << lib << " " << func << " " << CallTimes << " " << Cycles <<"\n";
       LibProfData[lib].Funcs[func].CallingTimes = CallTimes;
       LibProfData[lib].Funcs[func].TotalCycles = Cycles;
    }

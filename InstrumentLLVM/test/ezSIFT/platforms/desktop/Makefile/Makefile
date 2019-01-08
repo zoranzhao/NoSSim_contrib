@@ -7,7 +7,7 @@ INC_DIR=../../../include/
 SRC_DIR=../../../src/
 APP_DIR=../../../examples/image_match/
 HELPER_DIR=/home/slam/OMNET/NoSSim_contrib/ProfHelper
-EXEC=vgprah
+EXEC=vgraph
 
 VPATH=$(INC_DIR):$(SRC_DIR):$(APP_DIR)
 
