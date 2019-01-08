@@ -16,7 +16,6 @@ void simulation_start(int lib_id, int fun_id){
 }
 
 void simulation_end(int lib_id, int fun_id){
-
    printf("Total execution time is: %f\n", duration);
 }
 
