@@ -6,12 +6,9 @@ using namespace std;
 
 
 ProfData LibProfData[20];//Indexed by libID
-ProfData Set1[20]; 
-ProfData Set2[20];
-ProfData Set3[20]; 
-ProfData Set4[20];
-AnnotData LibAnnotData1[20];
-AnnotData LibAnnotData2[20];
+
+
+
 
 static cl::opt<string> libname("libname", cl::desc("Specify lib name under instrumentation"), cl::value_desc("libname"));
 static cl::opt<string> Instru("InstruProf", cl::desc("Specify instrumentation Purpose, Profiling or annotation"), cl::value_desc("preprof/prof/profbb/annot"));
@@ -90,71 +87,6 @@ bool FunctionInstr::doInitialization(Module &M) {
 
   if(Instru == "annot"){
   	errs()<< "================== Annotation stage =================" << '\n';
-        CalParameter1();
-        CalParameter2();
-
-	errs()<<"================== Set1 data is  ==================\n";
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(Set1[ii].Funcs[jj].CallingTimes!=0)
-		errs()<<ii<<" "<<jj<<" "<< Set1[ii].Funcs[jj].CallingTimes<<" "
-		<< Set1[ii].Funcs[jj].TotalCycles <<" "<< Set1[ii].Funcs[jj].TotalBBs << '\n';
-          }
-    	}
-
-
-	errs()<<"================== Set2 data is  ==================\n";
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(Set2[ii].Funcs[jj].CallingTimes!=0)
-		errs()<<ii<<" "<<jj<<" "<< Set2[ii].Funcs[jj].CallingTimes<<" "
-		<< Set2[ii].Funcs[jj].TotalCycles <<" "<<  Set2[ii].Funcs[jj].TotalBBs<< '\n';
-          }
-    	}
-
-
-	errs()<<"================== Parameter table is  ==================\n";
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(LibAnnotData1[ii].Funcs[jj].StaticCycles !=0)
-		errs()<<ii<<" "<<jj<<" "
-			<< LibAnnotData1[ii].Funcs[jj].a<<" "
-			<< LibAnnotData1[ii].Funcs[jj].StaticCycles << '\n';
-          }
-    	}
-
-	errs()<<"================== Set3 data is  ==================\n";
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(Set3[ii].Funcs[jj].CallingTimes!=0)
-		errs()<<ii<<" "<<jj<<" "<< Set3[ii].Funcs[jj].CallingTimes<<" "
-		<< Set3[ii].Funcs[jj].TotalCycles <<" "<< Set3[ii].Funcs[jj].TotalBBs << '\n';
-          }
-    	}
-
-
-	errs()<<"================== Set4 data is  ==================\n";
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(Set4[ii].Funcs[jj].CallingTimes!=0)
-		errs()<<ii<<" "<<jj<<" "<< Set4[ii].Funcs[jj].CallingTimes<<" "
-		<< Set4[ii].Funcs[jj].TotalCycles <<" "<<  Set4[ii].Funcs[jj].TotalBBs<< '\n';
-          }
-    	}
-
-
-	errs()<<"================== Parameter table is  ==================\n";
-	for(int ii=0;ii<20;ii++){
-          for(int jj=0;jj<10000;jj++){
-            if(LibAnnotData2[ii].Funcs[jj].StaticCycles !=0)
-		errs()<<ii<<" "<<jj<<" "
-			<< LibAnnotData2[ii].Funcs[jj].a<<" "
-			<< LibAnnotData2[ii].Funcs[jj].StaticCycles << '\n';
-          }
-    	}
-
-
-
   }
 
   ticket = 0;
@@ -238,9 +170,7 @@ bool FunctionInstr::runOnFunction(Function &F) {
   initializeCallbacks(*F.getParent());
   SmallVector<Instruction*, 8> RetVec;
 
-//Only
   if((Instru == "annot") || (Instru == "profbb")){
-
    Res = true; //A true function should be returned if the function is modified
    for (auto &BB : F) {
      if(isa<LandingPadInst>(BB.getFirstNonPHI())) continue;//Skip exception handling code
@@ -250,26 +180,8 @@ bool FunctionInstr::runOnFunction(Function &F) {
    }
 
   }
+	
 
-
-
-
-//Filterting out small functions in profiling stage
-  if((Instru == "profbb") && !(F.getName().equals(StringRef("main"))))
-    if( LibProfData[libID].Funcs[CurFunID].TotalCycles < cyc_threshold )
-	return Res;		
-
-//errs()<<libID << ":" << CurFunID << ":"<< LibProfData[libID].Funcs[CurFunID].TotalCycles <<'\n';
-//Filterting out small functions in profiling stage
-  if((Instru == "prof") && !(F.getName().equals(StringRef("main"))))
-    if( LibProfData[libID].Funcs[CurFunID].TotalCycles < cyc_threshold )
-	{
-		return Res;		
-	}
-//Filterting out small functions in annotation stage
-  if((Instru == "annot") && !(F.getName().equals(StringRef("main"))))
-    if( (Set1[libID].Funcs[CurFunID].CallingTimes == 0) &&  (Set2[libID].Funcs[CurFunID].CallingTimes == 0))
-	return Res;
 //Record function lists for each library
   FILE *f = fopen(("FunctionTable"+libname+".txt").c_str(), "a");
   if (f == NULL)
@@ -281,12 +193,6 @@ bool FunctionInstr::runOnFunction(Function &F) {
   //if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage)
   fprintf(f, "Ext Visible:%d:%d:%d:%s\n", (F.getLinkage() == llvm::GlobalValue::ExternalLinkage), libID, CurFunID, F.getName().data());
   fclose(f);
-
-
-
-
-
-
 
 
 
@@ -322,9 +228,9 @@ bool FunctionInstr::runOnFunction(Function &F) {
 		IRBRet.CreateCall(PapiTerminate, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	  if(Instru == "annot" ){
       	  	IRBRet.CreateCall(BAFuncDelay, {
-			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
-			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
-			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
+			ConstantFP::get(IRBRet.getContext(), APFloat( 1.0 )), 
+			ConstantFP::get(IRBRet.getContext(), APFloat( LibProfData[libID].Funcs[CurFunID].TotalCycles)), 
+			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});    
 		IRBRet.CreateCall(BATerminate, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	 	//The calling order in result code will be the same as the order of CreateCall
 	  }
@@ -345,8 +251,8 @@ bool FunctionInstr::runOnFunction(Function &F) {
       	      IRBRet.CreateCall(PapiFuncExit, {IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
 	  if(Instru == "annot" )
       	  	IRBRet.CreateCall(BAFuncDelay, {
-			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
-			ConstantFP::get(IRBRet.getContext(), APFloat( LibAnnotData1[libID].Funcs[CurFunID].a )), 
+			ConstantFP::get(IRBRet.getContext(), APFloat( 1.0 )), 
+			ConstantFP::get(IRBRet.getContext(), APFloat( LibProfData[libID].Funcs[CurFunID].TotalCycles)), 
 			IRBRet.getInt32(libID), IRBRet.getInt32(CurFunID)});  
    	}
    }
