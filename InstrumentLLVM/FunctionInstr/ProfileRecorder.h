@@ -38,17 +38,13 @@
 
 #include <iostream>
 #include <fstream>
-#include <cstdio>
-#include <cstdlib> 
 #include <sstream>
 #include <string>
-
 
 
 #ifndef PROFILERECORDER__H 
 #define PROFILERECORDER__H 
 
-//#define MIN_GRANU 50000
 
 
 typedef struct FuncProfileData {
@@ -91,8 +87,6 @@ void LoadProf(){
       LibProfData[lib].Funcs[func].TotalCycles = Cycles;
    }
 }                     
-
-
 
 
 
