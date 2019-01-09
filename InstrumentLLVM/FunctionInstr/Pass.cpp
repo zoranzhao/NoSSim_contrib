@@ -168,15 +168,12 @@ bool FunctionInstr::runOnFunction(Function &F) {
 
 //Record function lists for each library
    std::ofstream outfile;
-
    outfile.open("FunctionTable"+libname+".txt", std::ios_base::app);
    outfile << "Ext Visible:" << (F.getLinkage() == llvm::GlobalValue::ExternalLinkage) << ":" << libID << ":" << CurFunID << ":" << F.getName().data() << "\n";
    outfile.close();
 
 //We want to only annotated funtions available in source code
    if(F.getLinkage() == llvm::GlobalValue::ExternalLinkage){
-
-
       Res = true; //A true function should be returned if the function is modified
       for (auto &BB : F) {
          if(isa<LandingPadInst>(BB.getFirstNonPHI())) continue;//Skip exception handling code
