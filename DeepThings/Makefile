@@ -5,7 +5,7 @@ DEBUG=0
 DEEPTHINGS=/home/slam/Desktop/DeepThings/DeepThings
 DARKNET=/home/slam/OMNET/darknet-nnpack
 
-VPATH=$(DEEPTHINGS)/src
+VPATH=$(DEEPTHINGS)/src:./src
 DISTRIOT=$(DEEPTHINGS)/distriot
 OBJDIR=./obj/
 EXEC=deepthings
