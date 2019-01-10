@@ -10,7 +10,7 @@
 
 static const char* addr_list[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
 
-void process_task_one_device(device_ctxt* ctxt, blob* temp, bool is_reuse){
+void process_task_single_device(device_ctxt* ctxt, blob* temp, bool is_reuse){
    cnn_model* model = (cnn_model*)(ctxt->model);
    blob* result;
    set_model_input(model, (float*)temp->data);
@@ -28,7 +28,7 @@ void process_task_one_device(device_ctxt* ctxt, blob* temp, bool is_reuse){
    free_blob(result);
 }
 
-void partition_frame_and_perform_inference_thread(void *arg){
+void partition_frame_and_perform_inference_thread_single_device(void *arg){
    device_ctxt* ctxt = (device_ctxt*)arg;
    cnn_model* model = (cnn_model*)(ctxt->model);
 #ifdef NNPACK
@@ -50,7 +50,7 @@ void partition_frame_and_perform_inference_thread(void *arg){
          temp = try_dequeue(ctxt->task_queue);
          if(temp == NULL) break;
          bool data_ready = false;
-         process_task(ctxt, temp, data_ready);
+         process_task_single_device(ctxt, temp, data_ready);
          free_blob(temp);
       }
    }
@@ -59,6 +59,25 @@ void partition_frame_and_perform_inference_thread(void *arg){
    nnp_deinitialize();
 #endif
 }
+
+void transfer_data(device_ctxt* client, device_ctxt* gateway){
+   int32_t cli_id = client->this_cli_id;
+   while(1){
+      blob* temp = dequeue(client->result_queue);
+      enqueue(gateway->results_pool[cli_id], temp);
+      gateway->results_counter[cli_id]++;
+      free_blob(temp);
+      if(gateway->results_counter[cli_id] == gateway->batch_size){
+         temp = new_empty_blob(cli_id);
+         enqueue(gateway->ready_pool, temp);
+         free_blob(temp);
+         gateway->results_counter[cli_id] = 0;
+      }
+   }
+}
+
+
+void deepthings_merge_result_thread(void *arg);
 
 
 int main(int argc, char **argv){
@@ -76,6 +95,12 @@ int main(int argc, char **argv){
    device_ctxt* client_ctxt = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
    device_ctxt* gateway_ctxt = deepthings_gateway_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, total_cli_num, addr_list);
 
+   sys_thread_t t1 = sys_thread_new("partition_frame_and_perform_inference_thread_single_device", 
+                                     partition_frame_and_perform_inference_thread_single_device, client_ctxt, 0, 0);
+   sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread", deepthings_merge_result_thread, gateway_ctxt, 0, 0);
+
+   transfer_data(client_ctxt, gateway_ctxt);
+   
 
    return 0;
 }
