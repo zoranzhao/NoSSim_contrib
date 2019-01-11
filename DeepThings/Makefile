@@ -1,9 +1,9 @@
 OPENMP=1
 NNPACK=0
 ARM_NEON=0
-DEBUG=0
+DEBUG=1
 DEEPTHINGS=/home/slam/Desktop/DeepThings/DeepThings
-DARKNET=/home/slam/OMNET/darknet-nnpack
+DARKNET=$(DEEPTHINGS)/darknet-nnpack
 
 VPATH=$(DEEPTHINGS)/src:./src
 DISTRIOT=$(DEEPTHINGS)/distriot
