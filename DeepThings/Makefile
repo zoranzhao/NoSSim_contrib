@@ -5,7 +5,7 @@ DEBUG=1
 DEEPTHINGS=/home/slam/Desktop/DeepThings/DeepThings
 DARKNET=$(DEEPTHINGS)/darknet-nnpack
 
-VPATH=$(DEEPTHINGS)/src:./src
+VPATH=./src
 DISTRIOT=$(DEEPTHINGS)/distriot
 OBJDIR=./obj/
 EXEC=deepthings
@@ -15,7 +15,7 @@ DISTRIOTLIB=libdistriot.a
 CC=gcc
 LDFLAGS= -lm -pthread
 CFLAGS=-Wall -fPIC
-COMMON=-I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ 
+COMMON=-I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -Iinclude/ -Isrc/ 
 LDLIB=-L$(DISTRIOT) -l:$(DISTRIOTLIB) -L$(DARKNET) -l:$(DARKNETLIB)
 
 ifeq ($(OPENMP), 1) 
@@ -40,7 +40,7 @@ CFLAGS+= -DARM_NEON -mfpu=neon-vfpv4 -funsafe-math-optimizations -ftree-vectoriz
 endif
 
 CFLAGS+=$(OPTS)
-OBJS = test.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
+OBJS = test.o test_utils.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
 EXECOBJ = $(addprefix $(OBJDIR), $(OBJS))
 DEPS = $(wildcard */*.h) Makefile
 
