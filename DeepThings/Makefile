@@ -1,12 +1,11 @@
 OPENMP=1
 NNPACK=0
 ARM_NEON=0
-DEBUG=1
-DEEPTHINGS=/home/slam/Desktop/DeepThings/DeepThings
-DARKNET=$(DEEPTHINGS)/darknet-nnpack
+DEBUG=0
+DARKNET=./darknet-nnpack
 
 VPATH=./src
-DISTRIOT=$(DEEPTHINGS)/distriot
+DISTRIOT=./DistrIoT
 OBJDIR=./obj/
 EXEC=deepthings
 DARKNETLIB=libdarknet.a
