@@ -15,18 +15,48 @@ void partition_frame_and_perform_inference_thread_single_device(void *arg){
    for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
       /*Wait for i/o device input*/
       /*recv_img()*/
+
       /*Load image and partition, fill task queues*/
       load_image_as_model_input(model, frame_num);
       partition_and_enqueue(ctxt, frame_num);
+      /*register_client(ctxt);*/
 
       /*Dequeue and process task*/
       while(1){
          temp = try_dequeue(ctxt->task_queue);
          if(temp == NULL) break;
          bool data_ready = false;
+         printf("====================Processing task id is %d, data source is %d, frame_seq is %d====================\n", get_blob_task_id(temp), get_blob_cli_id(temp), get_blob_frame_seq(temp));
+#if DATA_REUSE
+         data_ready = is_reuse_ready(model->ftp_para_reuse, get_blob_task_id(temp));
+         if((model->ftp_para_reuse->schedule[get_blob_task_id(temp)] == 1) && data_ready) {
+            blob* shrinked_temp = new_blob_and_copy_data(get_blob_task_id(temp), 
+                       (model->ftp_para_reuse->shrinked_input_size[get_blob_task_id(temp)]),
+                       (uint8_t*)(model->ftp_para_reuse->shrinked_input[get_blob_task_id(temp)]));
+            copy_blob_meta(shrinked_temp, temp);
+            free_blob(temp);
+            temp = shrinked_temp;
+
+            /*Assume all reusable data is generated locally*/
+            /*
+            reuse_data_is_required = check_missing_coverage(model, get_blob_task_id(temp), get_blob_frame_seq(temp));
+            request_reuse_data(ctxt, temp, reuse_data_is_required);
+            free(reuse_data_is_required);
+	    */
+         }
+#if DEBUG_DEEP_EDGE
+         if((model->ftp_para_reuse->schedule[get_blob_task_id(temp)] == 1) && (!data_ready))
+            printf("The reuse data is not ready yet!\n");
+#endif/*DEBUG_DEEP_EDGE*/
+
+#endif/*DATA_REUSE*/
+         /*process_task(ctxt, temp, data_ready);*/
          process_task_single_device(ctxt, temp, data_ready);
          free_blob(temp);
       }
+
+      /*Unregister and prepare for next image*/
+      /*cancel_client(ctxt);*/
    }
 #ifdef NNPACK
    pthreadpool_destroy(model->net->threadpool);

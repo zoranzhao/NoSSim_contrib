@@ -37,8 +37,15 @@ void process_task_single_device(device_ctxt* ctxt, blob* temp, bool is_reuse){
                                       (uint8_t*)(get_model_output(model, model->ftp_para->fused_layers-1))
                                      );
 #if DATA_REUSE
-   //send_reuse_data(ctxt, temp);
-   
+   /*send_reuse_data(ctxt, temp);*/
+   /*if task doesn't generate any reuse_data*/
+   blob* task_input_blob=temp;
+   if(model->ftp_para_reuse->schedule[get_blob_task_id(task_input_blob)] != 1){
+      printf("Serialize reuse data for task %d:%d \n", get_blob_cli_id(task_input_blob), get_blob_task_id(task_input_blob)); 
+      blob* serialized_temp  = self_reuse_data_serialization(ctxt, get_blob_task_id(task_input_blob), get_blob_frame_seq(task_input_blob));
+      copy_blob_meta(serialized_temp, task_input_blob);
+      free_blob(serialized_temp);
+   }
 #endif
    copy_blob_meta(result, temp);
    enqueue(ctxt->result_queue, result); 
