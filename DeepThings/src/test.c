@@ -129,6 +129,7 @@ int main(int argc, char **argv){
 
    device_ctxt* client_ctxt = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
    device_ctxt* gateway_ctxt = deepthings_gateway_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, total_cli_num, addr_list);
+
    sys_thread_t t1 = sys_thread_new("partition_frame_and_perform_inference_thread_single_device", 
                                      partition_frame_and_perform_inference_thread_single_device, client_ctxt, 0, 0);
    sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread_single_device", deepthings_merge_result_thread_single_device, gateway_ctxt, 0, 0);
