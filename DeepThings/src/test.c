@@ -73,7 +73,8 @@ void deepthings_merge_result_thread_single_device(void *arg){
    blob* temp;
    int32_t cli_id;
    int32_t frame_seq;
-   while(1){
+   int32_t count = 0;
+   for(count = 0; count < FRAME_NUM; count ++){
       temp = dequeue_and_merge((device_ctxt*)arg);
       cli_id = get_blob_cli_id(temp);
       frame_seq = get_blob_frame_seq(temp);
@@ -114,6 +115,24 @@ void transfer_data(device_ctxt* client, device_ctxt* gateway){
    }
 }
 
+void transfer_data_with_number(device_ctxt* client, device_ctxt* gateway, int32_t task_num){
+   int32_t cli_id = client->this_cli_id;
+   int32_t count = 0;
+   for(count = 0; count < task_num; count ++){
+      blob* temp = dequeue(client->result_queue);
+      printf("Transfering data from client %d to gateway\n", cli_id);
+      enqueue(gateway->results_pool[cli_id], temp);
+      gateway->results_counter[cli_id]++;
+      free_blob(temp);
+      if(gateway->results_counter[cli_id] == gateway->batch_size){
+         temp = new_empty_blob(cli_id);
+         enqueue(gateway->ready_pool, temp);
+         free_blob(temp);
+         gateway->results_counter[cli_id] = 0;
+      }
+   }
+}
+
 
 int main(int argc, char **argv){
    /*Initialize the data structure and network model*/
@@ -129,14 +148,24 @@ int main(int argc, char **argv){
 
    device_ctxt* client_ctxt = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
    device_ctxt* gateway_ctxt = deepthings_gateway_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, total_cli_num, addr_list);
-
+   /*Multi-thread version*/
+   /*
    sys_thread_t t1 = sys_thread_new("partition_frame_and_perform_inference_thread_single_device", 
                                      partition_frame_and_perform_inference_thread_single_device, client_ctxt, 0, 0);
    sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread_single_device", deepthings_merge_result_thread_single_device, gateway_ctxt, 0, 0);
    transfer_data(client_ctxt, gateway_ctxt);
+   sys_thread_join(t1);
+   sys_thread_join(t2);
+   */
+   /*
+   sys_thread_t t3 = sys_thread_new("process_everything_in_gateway", process_everything_in_gateway, gateway_ctxt, 0, 0);
+   sys_thread_join(t3);
+   */
 
-   //sys_thread_t t = sys_thread_new("process_everything_in_gateway", process_everything_in_gateway, gateway_ctxt, 0, 0);
-   //sys_thread_join(t);
+   /*Single-thread version*/
+   partition_frame_and_perform_inference_thread_single_device(client_ctxt);
+   transfer_data_with_number(client_ctxt, gateway_ctxt, FRAME_NUM*partitions_h*partitions_h);
+   deepthings_merge_result_thread_single_device(gateway_ctxt);
 
    return 0;
 }
