@@ -1,4 +1,4 @@
-#include "thread_util.h"
+#include "hcsim_port.h"
 #include <string.h>
 #include <sys/time.h>
 #include <sys/types.h>
