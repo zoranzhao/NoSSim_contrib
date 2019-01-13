@@ -64,18 +64,18 @@ public:
    } 
 	
 
-	int getTaskID(sc_core::sc_process_handle taskHandler){
-		std::vector< sc_core::sc_process_handle >::iterator handlerIt = taskHandlerList.begin();
-		std::vector< int >::iterator idIt = taskIDList.begin();
-		for(; (handlerIt!=taskHandlerList.end() && idIt!=taskIDList.end() ) ;handlerIt++, idIt++){
+   int getTaskID(sc_core::sc_process_handle handler){
+      std::vector< sc_core::sc_process_handle >::iterator handlerIt = taskHandlerList.begin();
+      std::vector< int >::iterator idIt = taskIDList.begin();
+      for(; (handlerIt!=taskHandlerList.end() && idIt!=taskIDList.end() ) ;handlerIt++, idIt++){
 			if(*handlerIt == taskHandler)
 				return *idIt;	
 		}
-		return -1;
-	} 
+      return -1;
+   } 
 
 
-	OSModelCtxt* getTaskCtxt(sc_core::sc_process_handle taskHandler){
+   OSModelCtxt* getTaskCtxt(sc_core::sc_process_handle handler){
 		std::vector< sc_core::sc_process_handle >::iterator handlerIt = taskHandlerList.begin();
 		std::vector< OSModelCtxt* >::iterator idIt = ctxtIDList.begin();
 		for(; (handlerIt!=taskHandlerList.end() && idIt!=ctxtIDList.end() ) ;handlerIt++, idIt++)
