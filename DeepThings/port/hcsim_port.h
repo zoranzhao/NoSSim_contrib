@@ -2,7 +2,6 @@
 #define HCSIM_PORT_H
 #include "HCSim.h"
 #include <cstdint>
-#include <unordered_map>
 #define MAX_CORE_NUM 2
 
 class lwip_recv_if: virtual public sc_core::sc_interface{
@@ -35,59 +34,49 @@ public:
    int core_num;
 };
 
+typedef struct sc_process_handler_context{
+   os_model_context* os_ctxt;  
+   void* app_ctxt;
+   int task_id;  
+} handler_context
 
 class simulation_context{
-public:
    std::vector< sc_core::sc_process_handle> handler_list;  
-   std::vector< int > os_task_id_list;  
-   std::vector<os_model_context* > os_ctxt_list;  
-   std::vector<void* > app_ctxt_list;
-
-
-   void register_task(os_model_context* os_ctxt, void* app_ctxt, int os_task_id, sc_core::sc_process_handle handler){
-      app_ctxt_list.push_back(app_ctxt);
-      os_ctxt_list.push_back(os_ctxt);
-      os_task_id_list.push_back(os_task_id);
+   std::vector<handler_context> handler_context_list
+   
+public:
+   void register_task(os_model_context* os_ctxt, void* app_ctxt, int task_id, sc_core::sc_process_handle handler){
+      handler_context ctxt;
+      ctxt.os_ctxt = os_ctxt;  
+      ctxt.app_ctxt = app_ctxt;
+      ctxt.task_id = task_id;
       handler_list.push_back(handler);
+      handler_context_list.push_back(ctxt);
    }
 
+   handler_context get_handler_context(sc_core::sc_process_handle handler){
+      auto key = handler_list.begin();
+      auto item =  handler_context_list.begin();
+      for(; key!=handler_list.end() && item!= handler_context_list.end(); key++, item++){
+         if(*key == handler) break;
+      }
+      return *item;
+   }
+
+   os_model_context* get_os_ctxt(sc_core::sc_process_handle handler){
+      handler_context ctxt = get_handler_context(handlerr);
+      return ctxt.os_ctxt;
+   } 
 
    void* get_app_ctxt(sc_core::sc_process_handle handler){
-      std::vector< sc_core::sc_process_handle >::iterator handlerIt = taskHandlerList.begin();
-      std::vector< void* >::iterator idIt = lwipList.begin();
-      for(; (handlerIt!=taskHandlerList.end() && idIt!= lwipList.end() ) ;handlerIt++, idIt++){
-			if(*handlerIt == taskHandler)
-				return *idIt;	
-      }
-
-      return NULL;
+      handler_context ctxt = get_handler_context(handlerr);
+      return ctxt.app_ctxt;
    } 
 	
-
-   int getTaskID(sc_core::sc_process_handle handler){
-      std::vector< sc_core::sc_process_handle >::iterator handlerIt = taskHandlerList.begin();
-      std::vector< int >::iterator idIt = taskIDList.begin();
-      for(; (handlerIt!=taskHandlerList.end() && idIt!=taskIDList.end() ) ;handlerIt++, idIt++){
-			if(*handlerIt == taskHandler)
-				return *idIt;	
-		}
-      return -1;
+   int get_task_id(sc_core::sc_process_handle handler){
+      handler_context ctxt = get_handler_context(handlerr);
+      return ctxt.task_id;
    } 
-
-
-   OSModelCtxt* getTaskCtxt(sc_core::sc_process_handle handler){
-		std::vector< sc_core::sc_process_handle >::iterator handlerIt = taskHandlerList.begin();
-		std::vector< OSModelCtxt* >::iterator idIt = ctxtIDList.begin();
-		for(; (handlerIt!=taskHandlerList.end() && idIt!=ctxtIDList.end() ) ;handlerIt++, idIt++)
-		{
-			if(*handlerIt == taskHandler)
-				return *idIt;	
-		}
-		//printf("Error: no task ctxt existing in the global recorder\n");
-		return NULL;
-	} 
-
-
 };
 
 
