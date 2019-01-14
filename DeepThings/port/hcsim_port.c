@@ -45,8 +45,8 @@ sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int
 
    OS_wrapper_fn OS_fn = NULL;
    OS_fn = &wrapper;
-   sc_core::sc_process_handle th_handle; = sc_core::sc_spawn(     
-                                 sc_bind(  
+   sc_core::sc_process_handle th_handle = sc_core::sc_spawn(     
+                                         sc_bind(  
                                          OS_fn,
                                          ctxt, function, arg, child_id 
                                          )         
@@ -73,7 +73,7 @@ struct sys_sem {
    unsigned int c;
    sc_core::sc_event cond;
    sc_core::sc_mutex mutex;
-   void * ctxt;
+   void* ctxt;
    int blocking_task_id;
    int blocked_task_id;
 } sems[GLOBAL_SEMS];
@@ -84,14 +84,14 @@ static struct sys_sem * sys_sem_new_internal(uint8_t count)
    for(i = 0; i<GLOBAL_SEMS; i++){
       if(sems[i].free == 1) break;
    }
-  struct sys_sem *sem;
-  sem = sems + i;
-  sem->id = i;
-  sem->blocking_task_id = -1;
-  sem->blocked_task_id = -1; 
-  sem->free=0;
-  sem->c = count;
-  return sem;
+   struct sys_sem *sem;
+   sem = sems + i;
+   sem->id = i;
+   sem->blocking_task_id = -1;
+   sem->blocked_task_id = -1; 
+   sem->free=0;
+   sem->c = count;
+   return sem;
 }
 
 int32_t sys_sem_new(struct sys_sem **sem, uint8_t count)
@@ -121,7 +121,7 @@ sys_sem_signal(struct sys_sem **s)
 uint32_t
 sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout){
    sc_dt::uint64 start_time;
-   u32_t time_needed = 0;
+   uint32_t time_needed = 0;
    struct sys_sem *sem;
    sem = *s;
    int task_id = sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle());
@@ -138,13 +138,13 @@ sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout){
          start_time = sc_core::sc_time_stamp().value();
          sc_core::wait(timeout, sc_core::SC_MS, sem->cond);
          start_time = (sc_core::sc_time_stamp().value() - start_time);
-         time_needed = (u32_t)(start_time/1000000000);
+         time_needed = (uint32_t)(start_time/1000000000);
          if((time_needed == timeout) && (sem->c <= 0)){
             os_model->os_port->postWait(task_id);
 	    return SYS_ARCH_TIMEOUT;
          }
       }else{
-	   sc_core::wait(sem->cond);	
+         sc_core::wait(sem->cond);	
       }
       os_model->os_port->postWait(task_id);
    }
@@ -152,20 +152,22 @@ sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout){
    return time_needed;
 }
 
-static void sys_sem_free_internal(struct sys_sem *sem)
-{
+static void sys_sem_free_internal(struct sys_sem *sem){
    sem->free=1;
 }
 
-void sys_sem_free(struct sys_sem **sem)
-{
+void sys_sem_free(struct sys_sem **sem){
    if (sem != NULL) {
     sys_sem_free_internal(*sem);
    }
 }
 
 void sys_sleep(uint32_t milliseconds){
-
+   os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
+   int task_id = sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle());
+   os_model->os_port->taskSleep(task_id);	
+   sc_core::wait(milliseconds, sc_core::SC_MS);
+   os_model->os_port->taskResume(task_id);	   
 }
 
 uint32_t sys_now(void){
@@ -177,7 +179,7 @@ uint32_t sys_now(void){
 
 double sys_now_in_sec(void){
    /*Seconds*/
-   return ((double)sys_now())/1000;
+   return ((double)sys_now())/1000.0;
 }
 /*Intialization function used*/
 void sys_init(void){
