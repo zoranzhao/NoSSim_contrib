@@ -1,32 +1,32 @@
 #ifndef HCSIM_PORT_H
 #define HCSIM_PORT_H
+#include <systemc>
 #include "HCSim.h"
 #include <cstdint>
 #define MAX_CORE_NUM 2
 
-class lwip_recv_if: virtual public sc_core::sc_interface{
+class sys_call_recv_if: virtual public sc_core::sc_interface{
 public:
-   virtual int GetNode(int os_task_id) = 0;
-   virtual int GetWeight(int os_task_id) = 0;
-   virtual int GetSize(int os_task_id) = 0;
-   virtual bool GetData(unsigned size, char* data, int os_task_id) = 0;
+   virtual int get_node(int os_task_id) = 0;
+   virtual int get_weight(int os_task_id) = 0;
+   virtual int get_size(int os_task_id) = 0;
+   virtual bool get_data(unsigned size, char* data, int os_task_id) = 0;
 };
 
-class lwip_send_if: virtual public sc_core::sc_interface{
+class sys_call_send_if: virtual public sc_core::sc_interface{
 public:
-   virtual void SetNode(int NodeID, int os_task_id) = 0;
-   virtual void SetWeight(int weight, int os_task_id) = 0;
-   virtual void SetSize(int size, int os_task_id) = 0;
-   virtual void SetData(unsigned size, char* data, int os_task_id) = 0;
+   virtual void set_node(int NodeID, int os_task_id) = 0;
+   virtual void set_weight(int weight, int os_task_id) = 0;
+   virtual void set_size(int size, int os_task_id) = 0;
+   virtual void set_data(unsigned size, char* data, int os_task_id) = 0;
 };
-
 
 class os_model_context{
 public:
    int node_id;
 
-   sc_core::sc_port<lwip_recv_if> recv_port[MAX_CORE_NUM];
-   sc_core::sc_port<lwip_send_if> send_port[MAX_CORE_NUM]; 
+   sc_core::sc_port<sys_call_recv_if> recv_port[MAX_CORE_NUM];
+   sc_core::sc_port<sys_call_send_if> send_port[MAX_CORE_NUM]; 
    sc_core::sc_port< HCSim::OSAPI > os_port;
 
    int cli_id;
@@ -78,8 +78,6 @@ public:
       return ctxt.task_id;
    } 
 };
-
-
 
 
 typedef void (*thread_fn)(void *arg);
