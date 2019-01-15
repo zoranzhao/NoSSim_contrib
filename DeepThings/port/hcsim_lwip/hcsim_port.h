@@ -38,11 +38,11 @@ typedef struct sc_process_handler_context{
    os_model_context* os_ctxt;  
    void* app_ctxt;
    int task_id;  
-} handler_context
+} handler_context;
 
 class simulation_context{
    std::vector< sc_core::sc_process_handle> handler_list;  
-   std::vector<handler_context> handler_context_list
+   std::vector<handler_context> handler_context_list;
    
 public:
    void register_task(os_model_context* os_ctxt, void* app_ctxt, int task_id, sc_core::sc_process_handle handler){
@@ -64,17 +64,17 @@ public:
    }
 
    os_model_context* get_os_ctxt(sc_core::sc_process_handle handler){
-      handler_context ctxt = get_handler_context(handlerr);
+      handler_context ctxt = get_handler_context(handler);
       return ctxt.os_ctxt;
    } 
 
    void* get_app_ctxt(sc_core::sc_process_handle handler){
-      handler_context ctxt = get_handler_context(handlerr);
+      handler_context ctxt = get_handler_context(handler);
       return ctxt.app_ctxt;
    } 
 	
    int get_task_id(sc_core::sc_process_handle handler){
-      handler_context ctxt = get_handler_context(handlerr);
+      handler_context ctxt = get_handler_context(handler);
       return ctxt.task_id;
    } 
 };

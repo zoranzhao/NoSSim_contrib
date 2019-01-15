@@ -1,6 +1,7 @@
 HCSIM=1
+DISTRIOT=/home/slam/OMNET/NoSSim_contrib/DeepThings/DistrIoT
 
-VPATH=./src
+VPATH=$(DISTRIOT)/src:./src
 SLIB=libdistriot.so
 ALIB=libdistriot.a
 OBJDIR=./obj/
@@ -10,7 +11,7 @@ CXX=g++
 AR=ar
 ARFLAGS=rcs
 LDFLAGS= -lm -pthread 
-COMMON= -Iinclude/ -Isrc/
+COMMON= -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -Iinclude/ -Isrc/
 CFLAGS=-Wall -fPIC
 
 ifeq ($(HCSIM), 1) 
@@ -28,7 +29,11 @@ OPTS+=-Ofast
 endif
 
 CFLAGS+=$(OPTS)
+ifeq ($(HCSIM), 1) 
+OBJ = thread_safe_queue.o hcsim_port.o data_blob.o network_util.o exec_ctrl.o gateway.o client.o global_context.o
+else
 OBJ = thread_safe_queue.o thread_util.o data_blob.o network_util.o exec_ctrl.o gateway.o client.o global_context.o
+endif 
 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
 DEPS = $(wildcard */*.h) Makefile
@@ -39,10 +44,10 @@ $(ALIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
 
 $(SLIB): $(OBJS)
-	$(CC) $(CFLAGS) -shared $^ -o $@
+	$(CXX) $(CFLAGS) -shared $^ -o $@
 
 $(OBJDIR)%.o: %.c $(DEPS)
-	$(CC) $(COMMON) $(CFLAGS) -c $< -o $@
+	$(CXX) $(COMMON) $(CFLAGS) -c $< -o $@
 
 obj:
 	mkdir -p obj

@@ -27,34 +27,34 @@ typedef void (*os_wrapper_fn)(void *ctxt, thread_fn function, void* arg, int tas
 void wrapper(void *ctxt, thread_fn function, void *arg, int task_id){
    os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
    sim_ctxt.register_task(os_model, ctxt, task_id, sc_core::sc_get_current_process_handle());
-   os_model->os_port->taskActivate(taskID);
+   os_model->os_port->taskActivate(task_id);
    function(arg);
-   os_model->os_port->taskTerminate(taskID);
+   os_model->os_port->taskTerminate(task_id);
 }
 
 sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int priority, int core){
    void* ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
    os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
 
-   int child_id  = ( os_model->os_port->taskCreate(
+   int child_id  =  os_model->os_port->taskCreate(
 				sc_core::sc_gen_unique_name("child_task"), 
 				HCSim::OS_RT_APERIODIC, priority, 0, 0, 
 				HCSim::DEFAULT_TS, HCSim::ALL_CORES, core);
 
-   os_model-> os_port -> dynamicStart(init_core);
+   os_model->os_port->dynamicStart(core);
 
-   OS_wrapper_fn OS_fn = NULL;
-   OS_fn = &wrapper;
+   os_wrapper_fn os_fn = NULL;
+   os_fn = &wrapper;
    sc_core::sc_process_handle th_handle = sc_core::sc_spawn(     
                                          sc_bind(  
-                                         OS_fn,
+                                         os_fn,
                                          ctxt, function, arg, child_id 
                                          )         
                                 ); 
    struct sys_thread *thread = new sys_thread;
    if (thread != NULL) {
       threads_mutex.lock();
-      thread->next = ((LwipCntxt*)ctxt)->threads;
+      thread->next = threads;
       thread->sc_thread = th_handle;
       threads = thread;
       threads_mutex.unlock();
@@ -184,7 +184,7 @@ double sys_now_in_sec(void){
 /*Intialization function used*/
 void sys_init(void){
    starttime = (sc_dt::uint64) (sc_core::sc_time_stamp().value()/1000000000);
-   for(i = 0; i<GLOBAL_SEMS; i++){
+   for(int i = 0; i<GLOBAL_SEMS; i++){
       sems[i].free = 1;
    }
 }
