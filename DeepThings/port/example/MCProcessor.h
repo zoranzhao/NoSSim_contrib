@@ -8,6 +8,7 @@
 #include "HCSim.h"
 #include "config.h"
 #include "AppTasks.h"
+#include "hcsim_port.h"
 
 #ifndef SC_MCPROCESSOR__H
 #define SC_MCPROCESSOR__H
@@ -18,7 +19,7 @@
 
 class lwip_recv_Driver
     :public sc_core::sc_module
-     ,virtual public lwip_recv_if
+     ,virtual public sys_call_recv_if
 {
 public:
     /*---------------------------------------------------------
@@ -35,7 +36,7 @@ public:
     ~lwip_recv_Driver() { }
 
 
-    virtual int GetNode(int os_task_id)
+    virtual int get_node(int os_task_id)
     {
         int tmp;
         //intr_ch->receive(os_task_id);
@@ -45,7 +46,7 @@ public:
 
 
 
-    virtual int GetWeight(int os_task_id)
+    virtual int get_weight(int os_task_id)
     {
         int tmp;
         intr_ch->receive(os_task_id);
@@ -55,7 +56,7 @@ public:
 
 
 
-    virtual int GetSize(int os_task_id)
+    virtual int get_size(int os_task_id)
     {
         int tmp;
 
@@ -65,7 +66,7 @@ public:
     }
 
 
-    virtual bool GetData(unsigned size, char* data, int os_task_id)
+    virtual bool get_data(unsigned size, char* data, int os_task_id)
     {
         intr_ch->receive(os_task_id);
         mac_link_port->masterRead(address+1, data, size*sizeof(char));
@@ -81,7 +82,7 @@ private:
 
 class lwip_send_Driver
     :public sc_core::sc_module
-     ,virtual public lwip_send_if
+     ,virtual public sys_call_send_if
 {
 public:
     /*---------------------------------------------------------
@@ -97,14 +98,14 @@ public:
     }
     ~lwip_send_Driver() { }
 
-    virtual void SetNode(int NodeID, int os_task_id)
+    virtual void set_node(int NodeID, int os_task_id)
     {
         //intr_ch->receive(os_task_id);
         mac_link_port->masterWrite(address, &NodeID, sizeof(int));
     }
 
 
-    virtual void SetWeight(int weight, int os_task_id)
+    virtual void set_weight(int weight, int os_task_id)
     {
        //intr_ch->receive(os_task_id);
 	
@@ -112,7 +113,7 @@ public:
     }
 
 
-    virtual void SetSize(int size, int os_task_id)
+    virtual void set_size(int size, int os_task_id)
     {
         //std::cout<<"Writing into NIC"<<" addr: "<<address<<std::endl;
         //std::cout<<"Writing size into NIC"<<" size: "<<size<<std::endl;
@@ -121,7 +122,7 @@ public:
     }
 
 
-    virtual void SetData(unsigned size, char* data, int os_task_id)
+    virtual void set_data(unsigned size, char* data, int os_task_id)
 
     {
         //std::cout<<"Writing data into NIC"<<" size: "<<size<<std::endl;

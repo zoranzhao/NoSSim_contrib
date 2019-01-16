@@ -29,14 +29,35 @@ public:
    sc_core::sc_port<sys_call_send_if> send_port[MAX_CORE_NUM]; 
    sc_core::sc_port< HCSim::OSAPI > os_port;
 
-   int cli_id;
    int device_type;
    int core_num;
+   os_model_context(int node_id
+                    sc_core::sc_vector< sc_core::sc_port< sys_call_recv_if > >& recv_port,
+                    sc_core::sc_vector< sc_core::sc_port< sys_call_send_if > >& send_port,
+                    sc_core::sc_port< HCSim::OSAPI >& os_port){
+      core_num = 2;
+      device_type = 0;
+      this->node_id = node_id;
+      this->os_port(this->os_port);
+      for(int i = 0; i < core_num; i++){
+         this->->recv_port[i](this->recv_port[i]);
+         this->->send_port[i](this->send_port[i]);
+      }
+   }
+   ~os_model_context(){}
 };
+
+
+/*We also need a application context in order to capture app/lib-specific context data*/
+class app_context{
+public:
+   /*For example, here we can have global data defined to hold application states*/
+   void* app_ctxt;
+}
 
 typedef struct sc_process_handler_context{
    os_model_context* os_ctxt;  
-   void* app_ctxt;
+   app_context* app_ctxt;
    int task_id;  
 } handler_context;
 
@@ -45,7 +66,7 @@ class simulation_context{
    std::vector<handler_context> handler_context_list;
    
 public:
-   void register_task(os_model_context* os_ctxt, void* app_ctxt, int task_id, sc_core::sc_process_handle handler){
+   void register_task(os_model_context* os_ctxt, app_context* app_ctxt, int task_id, sc_core::sc_process_handle handler){
       handler_context ctxt;
       ctxt.os_ctxt = os_ctxt;  
       ctxt.app_ctxt = app_ctxt;
@@ -68,7 +89,7 @@ public:
       return ctxt.os_ctxt;
    } 
 
-   void* get_app_ctxt(sc_core::sc_process_handle handler){
+   app_context* get_app_ctxt(sc_core::sc_process_handle handler){
       handler_context ctxt = get_handler_context(handler);
       return ctxt.app_ctxt;
    } 
@@ -79,6 +100,8 @@ public:
    } 
 };
 
+
+extern simulation_context sim_ctxt;
 
 typedef void (*thread_fn)(void *arg);
 struct sys_thread;
