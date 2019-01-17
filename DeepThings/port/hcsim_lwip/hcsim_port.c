@@ -34,7 +34,6 @@ void wrapper(os_model_context* os_model, app_context* app_ctxt, thread_fn functi
 }
 
 sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int priority, int core){
-   void* ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
    os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
    app_context* app_ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
    int child_id  =  os_model->os_port->taskCreate(
