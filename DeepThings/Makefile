@@ -11,8 +11,12 @@ OBJDIR=./obj/
 EXEC=deepthings
 DARKNETLIB=libdarknet.a
 DISTRIOTLIB=libdistriot.a
+SLIB=lib$(EXEC).so
+ALIB=lib$(EXEC).a
 
 CC=gcc
+AR=ar
+ARFLAGS=rcs
 LDFLAGS= -lm -pthread
 CFLAGS=-Wall -fPIC
 COMMON=-I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -Iinclude/ -Isrc/ 
@@ -42,9 +46,18 @@ endif
 CFLAGS+=$(OPTS)
 OBJS = test.o test_utils.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
 EXECOBJ = $(addprefix $(OBJDIR), $(OBJS))
+LIBOBJS = test_utils.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
+LIBCOBJ = $(addprefix $(OBJDIR), $(LIBOBJS))
+
 DEPS = $(wildcard */*.h) Makefile
 
-all: obj $(EXEC)
+all: obj $(EXEC) $(SLIB) $(ALIB) 
+
+$(ALIB): $(LIBCOBJ)
+	$(AR) $(ARFLAGS) $@ $^
+
+$(SLIB): $(LIBCOBJ)
+	$(CC) $(CFLAGS) -shared $^ -o $@
 
 $(EXEC): $(EXECOBJ) $(DARKNETLIB) $(DISTRIOTLIB)
 	$(CC) $(COMMON) $(CFLAGS) $(EXECOBJ) -o $@  $(LDLIB) $(LDFLAGS)
