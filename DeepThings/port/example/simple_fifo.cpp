@@ -1,5 +1,7 @@
 #include <systemc.h>
 #include "omnet_dummy.h"
+double power_cli[10];
+double CliEnergy[10];
 
 class top : public sc_module
 {

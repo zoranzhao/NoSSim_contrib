@@ -23,33 +23,33 @@ struct sys_thread {
 };
 
 /*Function wrapper for OS task model*/
-typedef void (*os_wrapper_fn)(thread_fn function, void* arg, int task_id);
-void wrapper(void *ctxt, thread_fn function, void *arg, int task_id){
-   os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
-   app_context* app_ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
+typedef void (*os_wrapper_fn)(os_model_context* os_model, app_context* app_ctxt, thread_fn function, void* arg, int task_id);
+void wrapper(os_model_context* os_model, app_context* app_ctxt, thread_fn function, void *arg, int task_id){
    sim_ctxt.register_task(os_model, app_ctxt, task_id, sc_core::sc_get_current_process_handle());
    os_model->os_port->taskActivate(task_id);
+   std::cout << "taskActivate!" << std::endl;
    function(arg);
    os_model->os_port->taskTerminate(task_id);
+   std::cout << "taskTerminate!" << std::endl;
 }
 
 sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int priority, int core){
    void* ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
    os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
-
+   app_context* app_ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
    int child_id  =  os_model->os_port->taskCreate(
 				sc_core::sc_gen_unique_name("child_task"), 
 				HCSim::OS_RT_APERIODIC, priority, 0, 0, 
 				HCSim::DEFAULT_TS, HCSim::ALL_CORES, core);
-
+   std::cout << "taskCreate!" << std::endl;
    os_model->os_port->dynamicStart(core);
-
+   std::cout << "dynamicStart!" << std::endl;
    os_wrapper_fn os_fn = NULL;
    os_fn = &wrapper;
    sc_core::sc_process_handle th_handle = sc_core::sc_spawn(     
                                          sc_bind(  
                                          os_fn,
-                                         function, arg, child_id 
+                                         os_model, app_ctxt, function, arg, child_id 
                                          )         
                                 ); 
    struct sys_thread *thread = new sys_thread;

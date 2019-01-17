@@ -31,17 +31,17 @@ public:
 
    int device_type;
    int core_num;
-   os_model_context(int node_id
+   os_model_context(int node_id,
                     sc_core::sc_vector< sc_core::sc_port< sys_call_recv_if > >& recv_port,
                     sc_core::sc_vector< sc_core::sc_port< sys_call_send_if > >& send_port,
                     sc_core::sc_port< HCSim::OSAPI >& os_port){
       core_num = 2;
       device_type = 0;
       this->node_id = node_id;
-      this->os_port(this->os_port);
+      this->os_port(os_port);
       for(int i = 0; i < core_num; i++){
-         this->->recv_port[i](this->recv_port[i]);
-         this->->send_port[i](this->send_port[i]);
+         this->recv_port[i](recv_port[i]);
+         this->send_port[i](send_port[i]);
       }
    }
    ~os_model_context(){}
@@ -53,7 +53,7 @@ class app_context{
 public:
    /*For example, here we can have global data defined to hold application states*/
    void* app_ctxt;
-}
+};
 
 typedef struct sc_process_handler_context{
    os_model_context* os_ctxt;  

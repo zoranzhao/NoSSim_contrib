@@ -349,7 +349,7 @@ class MCProcessor_OS
     void intHandler__HINT2(int coreID);
  
     void* getLwipCtxt(){
-	return CPU_APP->g_ctxt;
+	return NULL;
     }
     void dumpStatJson(){
 	OS->statPrint();

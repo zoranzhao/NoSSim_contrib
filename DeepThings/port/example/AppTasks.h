@@ -6,7 +6,7 @@
 #define SC_TASK_MODEL__H
 
 void test(void* arg){
-   std::cout << "Hello world!" << std::endl 
+
 }
 
 class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_INIT{
@@ -33,9 +33,9 @@ public:
       this->init_core = 1;
       recv_port.init(2);
       send_port.init(2);
-      SC_THREAD(run_jobs);
       os_ctxt = new os_model_context(NodeID, this->recv_port, this->send_port, this->os_port);
-      app_ctxt = new app_ctxt();
+      app_ctxt = new app_context();
+      SC_THREAD(run_jobs);
    }
     
    ~IntrDriven_Task() {
@@ -64,7 +64,9 @@ private:
       os_port->timeWait(0, os_task_id);
       os_port->syncGlobalTime(os_task_id);
       sim_ctxt.register_task(os_ctxt, app_ctxt, os_task_id, sc_core::sc_get_current_process_handle());
+      std::cout << "Hello world!" << std::endl;
       sys_thread_new("test", test, NULL, 49, 0);
+      std::cout << "Hello world!" << std::endl; 
       os_port->taskTerminate(os_task_id);
    }
 };

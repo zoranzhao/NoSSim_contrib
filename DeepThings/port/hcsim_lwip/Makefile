@@ -1,3 +1,4 @@
+DEBUG=1
 HCSIM=1
 DISTRIOT=/home/slam/OMNET/NoSSim_contrib/DeepThings/DistrIoT
 
