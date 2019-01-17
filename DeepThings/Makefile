@@ -3,9 +3,10 @@ NNPACK=0
 ARM_NEON=0
 DEBUG=0
 DARKNET=./darknet-nnpack
-
-VPATH=./src
 DISTRIOT=./DistrIoT
+DEEPTHINGS=./DeepThings
+
+VPATH=$(DEEPTHINGS)/src:./src
 OBJDIR=./obj/
 EXEC=deepthings
 DARKNETLIB=libdarknet.a
@@ -14,7 +15,7 @@ DISTRIOTLIB=libdistriot.a
 CC=gcc
 LDFLAGS= -lm -pthread
 CFLAGS=-Wall -fPIC
-COMMON=-I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -Iinclude/ -Isrc/ 
+COMMON=-I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -Iinclude/ -Isrc/ 
 LDLIB=-L$(DISTRIOT) -l:$(DISTRIOTLIB) -L$(DARKNET) -l:$(DARKNETLIB)
 
 ifeq ($(OPENMP), 1) 

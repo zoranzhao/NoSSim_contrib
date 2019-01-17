@@ -11,7 +11,7 @@ void partition_frame_and_perform_inference_thread_single_device(void *arg){
 #endif
    blob* temp;
    uint32_t frame_num;
-   bool* reuse_data_is_required;   
+   /*bool* reuse_data_is_required;*/   
    for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
       /*Wait for i/o device input*/
       /*recv_img()*/
