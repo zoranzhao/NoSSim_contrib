@@ -1,8 +1,12 @@
 SYSTEMC_LIB=/home/slam/OMNET/systemc-2.3.1/lib-linux64
 SYSTEMC=/home/slam/OMNET/systemc-2.3.1
 HCSIM_DIR=/home/slam/OMNET/HCSim
-LDFLAGS=-L$(SYSTEMC_LIB) -lsystemc -L../hcsim_lwip -ldistriot -L$(HCSIM_DIR)/lib -lhcsim -Wl,-rpath,$(HCSIM_DIR)/lib:$(SYSTEMC_LIB):../hcsim_lwip
-CFLAGS=-DSC_INCLUDE_DYNAMIC_PROCESSES -I$(SYSTEMC)/include -I$(HCSIM_DIR)/include
+DEEPTHINGS=../..
+DARKNET=../../darknet-nnpack
+
+
+LDFLAGS=-L$(SYSTEMC_LIB) -lsystemc -L$(HCSIM_DIR)/lib -lhcsim  -L$(DEEPTHINGS) -ldeepthings -L$(DARKNET) -ldarknet -L../hcsim_lwip -ldistriot -Wl,-rpath,$(HCSIM_DIR)/lib:$(SYSTEMC_LIB):$(DEEPTHINGS):$(DARKNET):../hcsim_lwip
+CFLAGS=-DSC_INCLUDE_DYNAMIC_PROCESSES -I$(SYSTEMC)/include -I$(HCSIM_DIR)/include -I$(DEEPTHINGS)/include -I$(DEEPTHINGS)/src 
 
 MODULE 	= simple_fifo
 OBJS	= $(MODULE).o

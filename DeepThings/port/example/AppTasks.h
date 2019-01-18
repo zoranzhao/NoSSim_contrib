@@ -64,9 +64,7 @@ private:
       os_port->timeWait(0, os_task_id);
       os_port->syncGlobalTime(os_task_id);
       sim_ctxt.register_task(os_ctxt, app_ctxt, os_task_id, sc_core::sc_get_current_process_handle());
-      std::cout << "Hello world!" << std::endl;
       sys_thread_new("test", test, NULL, 49, 0);
-      std::cout << "Hello world!" << std::endl; 
       os_port->taskTerminate(os_task_id);
    }
 };
