@@ -5,11 +5,7 @@
 
 #ifndef SC_TASK_MODEL__H
 #define SC_TASK_MODEL__H
-//static const char* addr_list[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
-
-device_ctxt* deepthings_edge_init(uint32_t N, uint32_t M, uint32_t fused_layers, char* network, char* weights, uint32_t edge_id);
-device_ctxt* deepthings_gateway_init(uint32_t N, uint32_t M, uint32_t fused_layers, char* network, char* weights, uint32_t total_edge_number, const char** addr_list);
-
+extern const char* addr_list[MAX_EDGE_NUM];
 
 void test(void* arg){
    /*Initialize the data structure and network model*/
@@ -23,14 +19,13 @@ void test(void* arg){
    char network_file[30] = "models/yolo.cfg";
    char weight_file[30] = "models/yolo.weights";
 
-//   device_ctxt* client_ctxt = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
-   //device_ctxt* client_ctxt1 = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
-   //device_ctxt* gateway_ctxt = deepthings_gateway_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, total_cli_num, addr_list);
+   device_ctxt* client_ctxt = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
+   device_ctxt* gateway_ctxt = deepthings_gateway_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, total_cli_num, addr_list);
 
    /*Single-thread version*/
-//   partition_frame_and_perform_inference_thread_single_device(client_ctxt);
-//   transfer_data_with_number(client_ctxt, gateway_ctxt, FRAME_NUM*partitions_h*partitions_h);
-//   deepthings_merge_result_thread_single_device(gateway_ctxt);
+   partition_frame_and_perform_inference_thread_single_device(client_ctxt);
+   transfer_data_with_number(client_ctxt, gateway_ctxt, FRAME_NUM*partitions_h*partitions_h);
+   deepthings_merge_result_thread_single_device(gateway_ctxt);
 
 }
 
