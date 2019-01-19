@@ -1,11 +1,36 @@
 #include "HCSim.h"
 #include "hcsim_port.h"
 #include "OmnetIf_pkt.h"
+#include "test_utils.h"
 
 #ifndef SC_TASK_MODEL__H
 #define SC_TASK_MODEL__H
+//static const char* addr_list[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
+
+device_ctxt* deepthings_edge_init(uint32_t N, uint32_t M, uint32_t fused_layers, char* network, char* weights, uint32_t edge_id);
+device_ctxt* deepthings_gateway_init(uint32_t N, uint32_t M, uint32_t fused_layers, char* network, char* weights, uint32_t total_edge_number, const char** addr_list);
+
 
 void test(void* arg){
+   /*Initialize the data structure and network model*/
+   uint32_t total_cli_num = 1;
+   uint32_t this_cli_id = 0;
+
+   uint32_t partitions_h = 3;
+   uint32_t partitions_w = 3;
+   uint32_t fused_layers = 8;
+
+   char network_file[30] = "models/yolo.cfg";
+   char weight_file[30] = "models/yolo.weights";
+
+//   device_ctxt* client_ctxt = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
+   //device_ctxt* client_ctxt1 = deepthings_edge_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, this_cli_id);
+   //device_ctxt* gateway_ctxt = deepthings_gateway_init(partitions_h, partitions_w, fused_layers, network_file, weight_file, total_cli_num, addr_list);
+
+   /*Single-thread version*/
+//   partition_frame_and_perform_inference_thread_single_device(client_ctxt);
+//   transfer_data_with_number(client_ctxt, gateway_ctxt, FRAME_NUM*partitions_h*partitions_h);
+//   deepthings_merge_result_thread_single_device(gateway_ctxt);
 
 }
 
@@ -64,7 +89,10 @@ private:
       os_port->timeWait(0, os_task_id);
       os_port->syncGlobalTime(os_task_id);
       sim_ctxt.register_task(os_ctxt, app_ctxt, os_task_id, sc_core::sc_get_current_process_handle());
-      sys_thread_new("test", test, NULL, 49, 0);
+       
+      if(NodeID==0)
+	 test(NULL);
+         //sys_thread_new("test", test, NULL, 49, 0);
       os_port->taskTerminate(os_task_id);
    }
 };
