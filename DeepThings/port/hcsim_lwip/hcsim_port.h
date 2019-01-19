@@ -60,12 +60,18 @@ typedef struct sc_process_handler_context{
    app_context* app_ctxt;
    int task_id;  
 } handler_context;
+void sys_init(void);
+
 
 class simulation_context{
    std::vector< sc_core::sc_process_handle> handler_list;  
    std::vector<handler_context> handler_context_list;
    
 public:
+   simulation_context(){
+      sys_init();
+      std::cout << "Construct a new simulation context" << std::endl; 
+   }
    void register_task(os_model_context* os_ctxt, app_context* app_ctxt, int task_id, sc_core::sc_process_handle handler){
       handler_context ctxt;
       ctxt.os_ctxt = os_ctxt;  

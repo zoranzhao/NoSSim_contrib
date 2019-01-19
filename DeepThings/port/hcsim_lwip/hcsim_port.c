@@ -149,7 +149,7 @@ sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout){
       os_model->os_port->postWait(task_id);
    }
    sem->c--;
-   return time_needed;
+   return 0;
 }
 
 static void sys_sem_free_internal(struct sys_sem *sem){
