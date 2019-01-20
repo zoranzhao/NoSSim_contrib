@@ -7,7 +7,7 @@
 #include <systemc>
 #include "HCSim.h"
 #include "config.h"
-#include "AppTasks.h"
+#include "init_process.h"
 #include "hcsim_port.h"
 
 #ifndef SC_MCPROCESSOR__H

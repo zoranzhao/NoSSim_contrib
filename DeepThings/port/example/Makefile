@@ -21,21 +21,20 @@ LDFLAGS+= -lm
 CC = clang++ -g
 
 # --- Rules
-.SUFFIXES: .cc .cpp .o
+DEPS = Makefile $(wildcard *.h)
 
 $(EXE): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) 
 
-.cpp.o:
+%.o: %.cpp $(DEPS)
 	$(CC) $(CFLAGS) -c $<
 
-.cc.o:
+%.o: %.cc $(DEPS)
 	$(CC) $(CFLAGS) -c $<
 
 test:
 	./$(MODULE)
 
-clean::
+clean:
 	rm -f $(OBJS) *.log *~ $(EXE) core
-
 

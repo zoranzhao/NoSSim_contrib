@@ -3,8 +3,8 @@
 #include "OmnetIf_pkt.h"
 #include "test_utils.h"
 
-#ifndef SC_TASK_MODEL__H
-#define SC_TASK_MODEL__H
+#ifndef INIT_PROCESS_H
+#define INIT_PROCESS_H
 extern const char* addr_list[MAX_EDGE_NUM];
 
 void test(void* arg){
@@ -26,9 +26,10 @@ void test(void* arg){
    //transfer_data_with_number(client_ctxt, gateway_ctxt, FRAME_NUM*partitions_h*partitions_h);
    //deepthings_merge_result_thread_single_device(gateway_ctxt);
    
+
+   sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread_single_device", deepthings_merge_result_thread_single_device, gateway_ctxt, 49, 0);
    sys_thread_t t1 = sys_thread_new("partition_frame_and_perform_inference_thread_single_device",
                                      partition_frame_and_perform_inference_thread_single_device, client_ctxt, 49, 0);
-   sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread_single_device", deepthings_merge_result_thread_single_device, gateway_ctxt, 49, 1);
    transfer_data(client_ctxt, gateway_ctxt);
    sys_thread_join(t1);
    sys_thread_join(t2);
@@ -103,5 +104,6 @@ private:
 
 
 
-#endif // SC_TASK_MODEL__H 
+#endif //INIT_PROCESS_H
+ 
 
