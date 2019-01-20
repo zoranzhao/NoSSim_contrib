@@ -36,5 +36,5 @@ test:
 	./$(MODULE)
 
 clean:
-	rm -f $(OBJS) *.log *~ $(EXE) core
+	rm -f $(OBJS) *.log *~ $(EXE) core *.png
 
