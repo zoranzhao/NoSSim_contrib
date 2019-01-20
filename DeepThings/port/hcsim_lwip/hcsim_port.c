@@ -81,16 +81,18 @@ struct sys_sem {
 static struct sys_sem * sys_sem_new_internal(uint8_t count)
 {
    int i = 0;
+   struct sys_sem *sem=NULL;
    for(i = 0; i<GLOBAL_SEMS; i++){
-      if(sems[i].free == 1) break;
+      if(sems[i].free == 1){
+         sem = sems + i;
+         sem->id = i;
+         sem->blocking_task_id = -1;
+         sem->blocked_task_id = -1; 
+         sem->free=0;
+         sem->c = count;
+	 break;
+      }
    }
-   struct sys_sem *sem;
-   sem = sems + i;
-   sem->id = i;
-   sem->blocking_task_id = -1;
-   sem->blocked_task_id = -1; 
-   sem->free=0;
-   sem->c = count;
    return sem;
 }
 
@@ -158,7 +160,7 @@ static void sys_sem_free_internal(struct sys_sem *sem){
 
 void sys_sem_free(struct sys_sem **sem){
    if (sem != NULL) {
-    sys_sem_free_internal(*sem);
+      sys_sem_free_internal(*sem);
    }
 }
 
