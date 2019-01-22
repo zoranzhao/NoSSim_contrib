@@ -2,11 +2,11 @@ OPENMP=1
 NNPACK=0
 ARM_NEON=0
 DEBUG=1
-DARKNET=./darknet-nnpack
-DISTRIOT=./DistrIoT
-DEEPTHINGS=./DeepThings
+DEEPTHINGS=../DeepThings
+DARKNET=../darknet-nnpack
+DISTRIOT=../DistrIoT
 
-VPATH=$(DEEPTHINGS)/src:./src
+VPATH=$(DEEPTHINGS)/src:./
 OBJDIR=./obj/
 EXEC=deepthings
 DARKNETLIB=libdarknet.a
@@ -19,7 +19,7 @@ AR=ar
 ARFLAGS=rcs
 LDFLAGS= -lm -pthread
 CFLAGS=-Wall -fPIC
-COMMON=-I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -Iinclude/ -Isrc/ 
+COMMON=-I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -I. 
 LDLIB=-L$(DISTRIOT) -l:$(DISTRIOTLIB) -L$(DARKNET) -l:$(DARKNETLIB)
 
 ifeq ($(OPENMP), 1) 
@@ -46,18 +46,10 @@ endif
 CFLAGS+=$(OPTS)
 OBJS = test.o test_utils.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
 EXECOBJ = $(addprefix $(OBJDIR), $(OBJS))
-LIBOBJS = test_utils.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
-LIBOBJ = $(addprefix $(OBJDIR), $(LIBOBJS))
 
 DEPS = $(wildcard */*.h) Makefile
 
-all: obj $(EXEC) $(SLIB) $(ALIB) 
-
-$(ALIB): $(LIBOBJ)
-	$(AR) $(ARFLAGS) $@ $^
-
-$(SLIB): $(LIBOBJ)
-	$(CC) $(CFLAGS) -shared $^ -o $@
+all: obj $(EXEC)
 
 $(EXEC): $(EXECOBJ) $(DARKNETLIB) $(DISTRIOTLIB)
 	$(CC) $(COMMON) $(CFLAGS) $(EXECOBJ) -o $@  $(LDLIB) $(LDFLAGS)

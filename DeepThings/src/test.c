@@ -25,7 +25,7 @@ int main(int argc, char **argv){
    transfer_data(client_ctxt, gateway_ctxt);
    sys_thread_join(t1);
    sys_thread_join(t2);
-   
+    
    /*
    sys_thread_t t3 = sys_thread_new("process_everything_in_gateway", process_everything_in_gateway, gateway_ctxt, 0, 0);
    sys_thread_join(t3);

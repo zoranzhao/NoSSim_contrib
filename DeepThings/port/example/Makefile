@@ -9,7 +9,7 @@ DISTRIOT=../../DistrIoT
 LDFLAGS=-L$(SYSTEMC_LIB) -lsystemc -L$(HCSIM_DIR)/lib -lhcsim  -L$(APP) -ldeepthings -L$(DARKNET) -ldarknet -L../hcsim_lwip -ldistriot -Wl,-rpath,$(HCSIM_DIR)/lib:$(SYSTEMC_LIB):$(APP):$(DARKNET):../hcsim_lwip
 CFLAGS=-DSC_INCLUDE_DYNAMIC_PROCESSES -I$(SYSTEMC)/include -I$(HCSIM_DIR)/include -I$(DEEPTHINGS)/include -I$(DEEPTHINGS)/src -I$(APP)/include -I$(APP)/src -I$(DISTRIOT)/src -I$(DISTRIOT)/include -I$(DARKNET)/include -I$(DARKNET)/src 
 
-MODULE 	= simple_fifo
+MODULE 	= simulation
 OBJS	= $(MODULE).o
 EXE	= $(MODULE)
 
