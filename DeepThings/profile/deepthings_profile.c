@@ -1,185 +1,152 @@
-#include "test_utils.h"
-#include "ftp.h"
-#include "inference_engine_helper.h"
-#include "frame_partitioner.h"
-#include "reuse_data_serialization.h"
+#include "deepthings_profile.h"
 
+deepthings_profile_data deepthings_prof_data[NUM_OF_FUNCTIONS];
 
-void process_everything_in_gateway(void *arg){
-   cnn_model* model = (cnn_model*)(((device_ctxt*)(arg))->model);
-#ifdef NNPACK
-   nnp_initialize();
-   model->net->threadpool = pthreadpool_create(THREAD_NUM);
-#endif
-   int32_t frame_num;
-   for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
-      image_holder img = load_image_as_model_input(model, frame_num);
-      forward_all(model, 0);   
-      draw_object_boxes(model, frame_num);
-      free_image_holder(model, img);
-   }
-#ifdef NNPACK
-   pthreadpool_destroy(model->net->threadpool);
-   nnp_deinitialize();
-#endif
+char function_list[NUM_OF_FUNCTIONS][40]={
+   "self_reuse_data_serialization",
+   "adjacent_reuse_data_deserialization",
+   "place_adjacent_deserialized_data",
+   "forward_partition",
+   "load_image_as_model_input",
+   "partition_and_enqueue"
+};
+
+static inline double now_sec(){
+   struct timeval time;
+   if (gettimeofday(&time,NULL)) return 0;
+   return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
-
-
-void process_task_single_device(device_ctxt* ctxt, blob* temp, bool is_reuse){
-   printf("Task is: %d, frame number is %d\n", get_blob_task_id(temp), get_blob_frame_seq(temp));
-   cnn_model* model = (cnn_model*)(ctxt->model);
-   blob* result;
-   set_model_input(model, (float*)temp->data);
-   forward_partition(model, get_blob_task_id(temp), is_reuse);  
-   result = new_blob_and_copy_data(0, 
-                                      get_model_byte_size(model, model->ftp_para->fused_layers-1), 
-                                      (uint8_t*)(get_model_output(model, model->ftp_para->fused_layers-1))
-                                     );
-#if DATA_REUSE
-   /*send_reuse_data(ctxt, temp);*/
-   /*if task doesn't generate any reuse_data*/
-   blob* task_input_blob=temp;
-   if(model->ftp_para_reuse->schedule[get_blob_task_id(task_input_blob)] != 1){
-      printf("Serialize reuse data for task %d:%d \n", get_blob_cli_id(task_input_blob), get_blob_task_id(task_input_blob)); 
-      blob* serialized_temp  = self_reuse_data_serialization(ctxt, get_blob_task_id(task_input_blob), get_blob_frame_seq(task_input_blob));
-      copy_blob_meta(serialized_temp, task_input_blob);
-      free_blob(serialized_temp);
-   }
-#endif
-   copy_blob_meta(result, temp);
-   enqueue(ctxt->result_queue, result); 
-   free_blob(result);
+static inline double now_usec(){
+   struct timeval time;
+   if (gettimeofday(&time,NULL)) return 0;
+   return (double)time.tv_sec * 1000000 + (double)time.tv_usec;
 }
 
-void partition_frame_and_perform_inference_thread_single_device(void *arg){
-   device_ctxt* ctxt = (device_ctxt*)arg;
-   cnn_model* model = (cnn_model*)(ctxt->model);
-#ifdef NNPACK
-   nnp_initialize();
-   model->net->threadpool = pthreadpool_create(THREAD_NUM);
-#endif
-   blob* temp;
-   uint32_t frame_num;
-   /*bool* reuse_data_is_required;*/   
-   for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
-      /*Wait for i/o device input*/
-      /*recv_img()*/
+uint32_t get_function_id(char* function_name){
+   uint32_t id = 0; 
+   for(id = 0; id < NUM_OF_FUNCTIONS; id++){
+      if(strcmp(function_name, function_list[id]) == 0) return id;
+   }
+   return 0;
+}
 
-      /*Load image and partition, fill task queues*/
-      load_image_as_model_input(model, frame_num);
-      partition_and_enqueue(ctxt, frame_num);
-      /*register_client(ctxt);*/
+char* get_function_name(uint32_t id){
+   if(id < NUM_OF_FUNCTIONS) return function_list[id];
+   return NULL;
+}
 
-      /*Dequeue and process task*/
-      while(1){
-         temp = try_dequeue(ctxt->task_queue);
-         if(temp == NULL) break;
-         bool data_ready = false;
-         printf("====================Processing task id is %d, data source is %d, frame_seq is %d====================\n", get_blob_task_id(temp), get_blob_cli_id(temp), get_blob_frame_seq(temp));
-#if DATA_REUSE
-         data_ready = is_reuse_ready(model->ftp_para_reuse, get_blob_task_id(temp));
-         if((model->ftp_para_reuse->schedule[get_blob_task_id(temp)] == 1) && data_ready) {
-            blob* shrinked_temp = new_blob_and_copy_data(get_blob_task_id(temp), 
-                       (model->ftp_para_reuse->shrinked_input_size[get_blob_task_id(temp)]),
-                       (uint8_t*)(model->ftp_para_reuse->shrinked_input[get_blob_task_id(temp)]));
-            copy_blob_meta(shrinked_temp, temp);
-            free_blob(temp);
-            temp = shrinked_temp;
-
-            /*Assume all reusable data is generated locally*/
-            /*
-            reuse_data_is_required = check_missing_coverage(model, get_blob_task_id(temp), get_blob_frame_seq(temp));
-            request_reuse_data(ctxt, temp, reuse_data_is_required);
-            free(reuse_data_is_required);
-	    */
+void dump_profile(char* filename){
+   FILE *f = fopen(filename, "w");
+   if (f == NULL){
+      printf("Error opening file!\n");
+      exit(1);
+   }
+   uint32_t function_id;
+   uint32_t frame_number;
+   uint32_t partition_number;
+   uint32_t data_reuse;
+   fprintf(f, "name_of_function	frame#	partition#	reuse	calling#	avg_time\n");
+   for(function_id = 0; function_id < NUM_OF_FUNCTIONS; function_id++){
+      for(frame_number = 0; frame_number < FRAME_NUM; frame_number++){
+         for(partition_number=0; partition_number<PARTITIONS_MAX; partition_number++){
+            for(data_reuse=0; data_reuse<2; data_reuse++){
+               if(deepthings_prof_data[function_id].valid[frame_number][partition_number][data_reuse] == false) continue;
+               fprintf(f, "%s	%d	%d	%d	%ld	%f\n", 
+                    get_function_name(function_id), 
+                    frame_number, 
+                    partition_number,
+                    data_reuse,
+                    deepthings_prof_data[function_id].calling_times[frame_number][partition_number][data_reuse], 
+                    deepthings_prof_data[function_id].avg_duration[frame_number][partition_number][data_reuse]      
+               );
+            }
          }
-#if DEBUG_DEEP_EDGE
-         if((model->ftp_para_reuse->schedule[get_blob_task_id(temp)] == 1) && (!data_ready))
-            printf("The reuse data is not ready yet!\n");
-#endif/*DEBUG_DEEP_EDGE*/
-
-#endif/*DATA_REUSE*/
-         /*process_task(ctxt, temp, data_ready);*/
-         process_task_single_device(ctxt, temp, data_ready);
-         free_blob(temp);
       }
-
-      /*Unregister and prepare for next image*/
-      /*cancel_client(ctxt);*/
    }
-#ifdef NNPACK
-   pthreadpool_destroy(model->net->threadpool);
-   nnp_deinitialize();
-#endif
+   fclose(f);
 }
 
-void deepthings_merge_result_thread_single_device(void *arg){
-   cnn_model* model = (cnn_model*)(((device_ctxt*)(arg))->model);
-#ifdef NNPACK
-   nnp_initialize();
-   model->net->threadpool = pthreadpool_create(THREAD_NUM);
-#endif
-   blob* temp;
-   int32_t cli_id;
-   int32_t frame_seq;
-   int32_t count = 0;
-   for(count = 0; count < FRAME_NUM; count ++){
-      temp = dequeue_and_merge((device_ctxt*)arg);
-      cli_id = get_blob_cli_id(temp);
-      frame_seq = get_blob_frame_seq(temp);
-#if DEBUG_FLAG
-      printf("Client %d, frame sequence number %d, all partitions are merged in deepthings_merge_result_thread\n", cli_id, frame_seq);
-#endif
-      float* fused_output = (float*)(temp->data);
-      image_holder img = load_image_as_model_input(model, get_blob_frame_seq(temp));
-      set_model_input(model, fused_output);
-      forward_all(model, model->ftp_para->fused_layers);   
-      draw_object_boxes(model, get_blob_frame_seq(temp));
-      free_image_holder(model, img);
-      free_blob(temp);
-#if DEBUG_FLAG
-      printf("Client %d, frame sequence number %d, finish processing\n", cli_id, frame_seq);
-#endif
-   }
-#ifdef NNPACK
-   pthreadpool_destroy(model->net->threadpool);
-   nnp_deinitialize();
-#endif
-}
+#define BUFFER_SIZE 200
+void load_profile(char * filename){
+   const char *delimiter = "	";
+   FILE *profile_data = fopen(filename, "r");
+   char buffer[BUFFER_SIZE];
+   char *token;
+   uint32_t line_number = 0;
+   uint32_t token_number = 0; 
 
-void transfer_data(device_ctxt* client, device_ctxt* gateway){
-   int32_t cli_id = client->this_cli_id;
-   while(1){
-      blob* temp = dequeue(client->result_queue);
-      printf("Transfering data from client %d to gateway\n", cli_id);
-      enqueue(gateway->results_pool[cli_id], temp);
-      gateway->results_counter[cli_id]++;
-      free_blob(temp);
-      if(gateway->results_counter[cli_id] == gateway->batch_size){
-         temp = new_empty_blob(cli_id);
-         enqueue(gateway->ready_pool, temp);
-         free_blob(temp);
-         gateway->results_counter[cli_id] = 0;
+   if(profile_data == NULL){
+      printf("Unable to open file %s\n", filename);
+   }else{
+      while(fgets(buffer, BUFFER_SIZE, profile_data) != NULL){
+         line_number++;
+         if(line_number == 1) continue;
+         token_number = 0;
+         uint32_t function_id;
+         uint32_t frame_number;
+         uint32_t partition_number;
+         uint32_t data_reuse;
+         token = strtok(buffer, delimiter);
+         while(token != NULL){
+            token_number++;
+	    switch (token_number){
+               case 1: function_id = get_function_id(token); break;
+               case 2: frame_number = atoi(token); break;
+               case 3: partition_number = atoi(token); break;
+               case 4: data_reuse = atoi(token); break;
+               case 5: deepthings_prof_data[function_id].calling_times[frame_number][partition_number][data_reuse] = atoi(token); break;
+               case 6: deepthings_prof_data[function_id].avg_duration[frame_number][partition_number][data_reuse] = atof(token); 
+                       deepthings_prof_data[function_id].valid[frame_number][partition_number][data_reuse] = true;
+                       break;
+            }
+            token = strtok(NULL, delimiter);
+         }
       }
    }
 }
 
-void transfer_data_with_number(device_ctxt* client, device_ctxt* gateway, int32_t task_num){
-   int32_t cli_id = client->this_cli_id;
-   int32_t count = 0;
-   for(count = 0; count < task_num; count ++){
-      blob* temp = dequeue(client->result_queue);
-      printf("Transfering data from client %d to gateway\n", cli_id);
-      enqueue(gateway->results_pool[cli_id], temp);
-      gateway->results_counter[cli_id]++;
-      free_blob(temp);
-      if(gateway->results_counter[cli_id] == gateway->batch_size){
-         temp = new_empty_blob(cli_id);
-         enqueue(gateway->ready_pool, temp);
-         free_blob(temp);
-         gateway->results_counter[cli_id] = 0;
+void profile_start(){
+   uint32_t function_id;
+   uint32_t frame_number;
+   uint32_t partition_number;
+   for(function_id = 0; function_id < NUM_OF_FUNCTIONS; function_id++){
+      for(frame_number = 0; frame_number < FRAME_NUM; frame_number++){
+         for(partition_number=0; partition_number<PARTITIONS_MAX; partition_number++){
+            deepthings_prof_data[function_id].valid[frame_number][partition_number][0] = false;
+            deepthings_prof_data[function_id].valid[frame_number][partition_number][1] = false;
+            deepthings_prof_data[function_id].total_duration[frame_number][partition_number][0] = 0.0;
+            deepthings_prof_data[function_id].total_duration[frame_number][partition_number][1] = 0.0;
+            deepthings_prof_data[function_id].avg_duration[frame_number][partition_number][0] = 0.0;
+            deepthings_prof_data[function_id].avg_duration[frame_number][partition_number][1] = 0.0;
+            deepthings_prof_data[function_id].calling_times[frame_number][partition_number][0] = 0;
+            deepthings_prof_data[function_id].calling_times[frame_number][partition_number][1] = 0;
+         }
       }
    }
 }
+
+void profile_end(uint32_t partition_h, uint32_t partition_w, uint32_t layers){
+   char filename[50];
+   sprintf(filename, "%dx%d_grid_%d_layers.prof", partition_h, partition_w, layers);
+   dump_profile(filename);
+}
+
+void start_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse){
+   uint32_t function_id = get_function_id(function_name);
+   deepthings_prof_data[function_id].start_time = now_usec();
+
+}
+
+void stop_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse){
+   uint32_t function_id = get_function_id(function_name);
+   deepthings_prof_data[function_id].total_duration[frame_number][partition_number][data_reuse] += 
+                          now_usec() - deepthings_prof_data[function_id].start_time;
+   deepthings_prof_data[function_id].calling_times[frame_number][partition_number][data_reuse]++;
+   deepthings_prof_data[function_id].avg_duration[frame_number][partition_number][data_reuse] =
+                     deepthings_prof_data[function_id].total_duration[frame_number][partition_number][data_reuse]/
+                      ((double)(deepthings_prof_data[function_id].calling_times[frame_number][partition_number][data_reuse]));
+   deepthings_prof_data[function_id].valid[frame_number][partition_number][data_reuse] = true;
+}
+
 
