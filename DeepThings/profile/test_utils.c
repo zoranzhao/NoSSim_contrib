@@ -178,3 +178,88 @@ void transfer_data_with_number(device_ctxt* client, device_ctxt* gateway, int32_
    }
 }
 
+
+/*Reuse data serialization method in gateway device*/
+/*
+//Collect reuse data from edge devices
+static overlapped_tile_data* overlapped_data_pool[MAX_EDGE_NUM][PARTITIONS_MAX];
+void recv_reuse_data_from_edge_single_device(device_ctxt* gateway, blob* recv_data_blob){
+   printf("collecting_reuse_data ... ... \n");
+   cnn_model* gateway_model = gateway->model;
+   blob* temp = recv_data_blob;
+   int32_t cli_id = 0;
+   int32_t task_id = get_blob_task_id(temp);
+   if(overlapped_data_pool[cli_id][task_id] != NULL)
+      free_self_overlapped_tile_data(gateway_model,  overlapped_data_pool[cli_id][task_id]);
+   overlapped_data_pool[cli_id][task_id] = self_reuse_data_deserialization(gateway_model, task_id, (float*)temp->data, get_blob_frame_seq(temp));
+   //Should I?//free_blob(temp);
+}
+
+
+//Hand out reuse data to edge devices
+void* send_reuse_data_to_edge(device_ctxt* ctxt, blob* recv_data_blob){
+   printf("handing_out_reuse_data ... ... \n");
+
+   cnn_model* gateway_model = (cnn_model*)(ctxt->model);
+
+   int32_t cli_id;
+   int32_t task_id;
+   uint32_t frame_num;
+   blob* temp = recv_data_blob;
+   cli_id = get_blob_cli_id(temp);
+   task_id = get_blob_task_id(temp);
+   frame_num = get_blob_frame_seq(temp);
+   free_blob(temp);
+
+   blob* reuse_info_blob = recv_data_blob;
+   bool* reuse_data_is_required = (bool*)(reuse_info_blob->data);
+
+   uint32_t position;
+   int32_t* adjacent_id = get_adjacent_task_id_list(gateway_model, task_id);
+
+   for(position = 0; position < 4; position++){
+      if(adjacent_id[position]==-1) continue;
+      if(reuse_data_is_required[position]){
+         place_self_deserialized_data(gateway_model, adjacent_id[position], overlapped_data_pool[cli_id][adjacent_id[position]]);
+      }
+   }
+   free(adjacent_id);
+   temp = adjacent_reuse_data_serialization(ctxt, task_id, frame_num, reuse_data_is_required);
+   free_blob(reuse_info_blob);
+   free_blob(temp);
+}
+*/
+
+
+/*Reuse data serialization method in edge device*/ 
+/*
+//Request reuse data from gateway
+void request_reuse_data_single_device(device_ctxt* gateway_ctxt, blob* task_input_blob, blob* recv_data_blob, bool* reuse_data_is_required){
+   cnn_model* model = (cnn_model*)(gateway_ctxt->model);
+   if(model->ftp_para_reuse->schedule[get_blob_task_id(task_input_blob)] == 0) return;//Task without any dependency
+   temp = recv_data_blob;
+   copy_blob_meta(temp, task_input_blob);
+   overlapped_tile_data** temp_region_and_data = adjacent_reuse_data_deserialization(model, get_blob_task_id(temp), (float*)temp->data, get_blob_frame_seq(temp), reuse_data_is_required);
+   place_adjacent_deserialized_data(model, get_blob_task_id(temp), temp_region_and_data, reuse_data_is_required);
+   //Should I?//free_blob(temp);
+   close_service_connection(conn);
+}
+*/
+
+
+/*
+//Send generated reuse data to gateway 
+void send_reuse_data_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt, blob* task_input_blob){
+   cnn_model* model = (cnn_model*)(edge_ctxt->model);
+   if(model->ftp_para_reuse->schedule[get_blob_task_id(task_input_blob)] == 1) return;
+   blob* temp  = self_reuse_data_serialization(edge_ctxt, get_blob_task_id(task_input_blob), get_blob_frame_seq(task_input_blob));
+   copy_blob_meta(temp, task_input_blob);
+
+   //Transfer it to the gateway  
+   recv_reuse_data_from_edge_single_device(gateway_ctxt, temp);
+   //Transfer it to the gateway 
+
+   free_blob(temp);
+}
+*/
+
