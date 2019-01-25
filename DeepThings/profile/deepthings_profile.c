@@ -3,13 +3,28 @@
 deepthings_profile_data deepthings_prof_data[NUM_OF_FUNCTIONS];
 
 char function_list[NUM_OF_FUNCTIONS][40]={
+/*Serialization functions used in edge node devices*/
    "self_reuse_data_serialization",
    "adjacent_reuse_data_deserialization",
    "place_adjacent_deserialized_data",
+
+/*Serialization functions used in gateway devices*/
+   "place_self_deserialized_data",
+   "adjacent_reuse_data_serialization",
+   "self_reuse_data_deserialization",
+
+/*Data dependent function calls*/
    "forward_partition",
    "load_image_as_model_input",
    "partition_and_enqueue"
 };
+
+/*
+start_timer("forward_partition", get_blob_frame_seq(temp), get_blob_task_id(temp), is_reuse);
+void start_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse);
+void stop_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse);
+*/
+
 
 static inline double now_sec(){
    struct timeval time;

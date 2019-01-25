@@ -26,7 +26,9 @@ void process_task_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctx
    cnn_model* model = (cnn_model*)(edge_ctxt->model);
    blob* result;
    set_model_input(model, (float*)temp->data);
+   start_timer("forward_partition", get_blob_frame_seq(temp), get_blob_task_id(temp), is_reuse);
    forward_partition(model, get_blob_task_id(temp), is_reuse);  
+   stop_timer("forward_partition", get_blob_frame_seq(temp), get_blob_task_id(temp), is_reuse);
    result = new_blob_and_copy_data(0, 
                                       get_model_byte_size(model, model->ftp_para->fused_layers-1), 
                                       (uint8_t*)(get_model_output(model, model->ftp_para->fused_layers-1))
@@ -56,8 +58,13 @@ void partition_frame_and_perform_inference_thread_single_device(device_ctxt* edg
       /*recv_img()*/
 
       /*Load image and partition, fill task queues*/
+      start_timer("load_image_as_model_input", frame_num, 0, 0);
       load_image_as_model_input(model, frame_num);
+      stop_timer("load_image_as_model_input", frame_num, 0, 0);
+
+      start_timer("partition_and_enqueue", frame_num, 0, 0);
       partition_and_enqueue(edge_ctxt, frame_num);
+      start_timer("partition_and_enqueue", frame_num, 0, 0);
       /*register_client(edge_ctxt);*/
 
       /*Dequeue and process task*/
@@ -100,6 +107,47 @@ void partition_frame_and_perform_inference_thread_single_device(device_ctxt* edg
 
       /*Unregister and prepare for next image*/
       /*cancel_client(edge_ctxt);*/
+   }
+#ifdef NNPACK
+   pthreadpool_destroy(model->net->threadpool);
+   nnp_deinitialize();
+#endif
+}
+
+
+void partition_frame_and_perform_inference_thread_single_device_no_reuse(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt){
+   cnn_model* model = (cnn_model*)(edge_ctxt->model);
+#ifdef NNPACK
+   nnp_initialize();
+   model->net->threadpool = pthreadpool_create(THREAD_NUM);
+#endif
+   blob* temp;
+   uint32_t frame_num;
+   /*bool* reuse_data_is_required;*/   
+   for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
+      /*Wait for i/o device input*/
+      /*recv_img()*/
+
+      /*Load image and partition, fill task queues*/
+      start_timer("load_image_as_model_input", frame_num, 0, 0);
+      load_image_as_model_input(model, frame_num);
+      stop_timer("load_image_as_model_input", frame_num, 0, 0);
+
+      start_timer("partition_and_enqueue", frame_num, 0, 0);
+      partition_and_enqueue(edge_ctxt, frame_num);
+      start_timer("partition_and_enqueue", frame_num, 0, 0);
+      /*register_client(edge_ctxt);*/
+
+      /*Dequeue and process task*/
+      while(1){
+         temp = try_dequeue(edge_ctxt->task_queue);
+         if(temp == NULL) break;
+         bool data_ready = false;
+         printf("====================Processing task id is %d, data source is %d, frame_seq is %d====================\n", get_blob_task_id(temp), get_blob_cli_id(temp), get_blob_frame_seq(temp));
+         /*process_task(edge_ctxt, temp, data_ready);*/
+         process_task_single_device(edge_ctxt, gateway_ctxt, temp, data_ready);
+         free_blob(temp);
+      }
    }
 #ifdef NNPACK
    pthreadpool_destroy(model->net->threadpool);
@@ -217,12 +265,16 @@ blob* send_reuse_data_to_edge_single_device(device_ctxt* edge_ctxt, device_ctxt*
       if(adjacent_id[position]==-1) continue;
       if(reuse_data_is_required[position]){
          printf("In gateway, collect reuse data generated from task %d\n", adjacent_id[position]);
+         start_timer("place_self_deserialized_data", frame_num, cli_id, 1);
          place_self_deserialized_data(gateway_model, adjacent_id[position], overlapped_data_pool[cli_id][adjacent_id[position]]);
+         stop_timer("place_self_deserialized_data", frame_num, cli_id, 1);
       }
    }
 
    free(adjacent_id);
+   start_timer("adjacent_reuse_data_serialization", frame_num, cli_id, 1);
    blob* temp = adjacent_reuse_data_serialization(gateway_ctxt, task_id, frame_num, reuse_data_is_required);
+   stop_timer("adjacent_reuse_data_serialization", frame_num, cli_id, 1);
    free_blob(recv_missing_info);
    return temp;
 
@@ -254,8 +306,12 @@ void request_reuse_data_single_device(device_ctxt* edge_ctxt, device_ctxt* gatew
    //temp = recv_data(conn);
    temp = send_reuse_data_to_edge_single_device(edge_ctxt, gateway_ctxt, recv_meta, recv_missing_info);
    copy_blob_meta(temp, task_input_blob);
+   start_timer("adjacent_reuse_data_deserialization", get_blob_frame_seq(temp), get_blob_task_id(temp), 1);
    overlapped_tile_data** temp_region_and_data = adjacent_reuse_data_deserialization(model, get_blob_task_id(temp), (float*)temp->data, get_blob_frame_seq(temp), reuse_data_is_required);
+   stop_timer("adjacent_reuse_data_deserialization", get_blob_frame_seq(temp), get_blob_task_id(temp), 1);
+   start_timer("place_adjacent_deserialized_data", get_blob_frame_seq(temp), get_blob_task_id(temp), 1);
    place_adjacent_deserialized_data(model, get_blob_task_id(temp), temp_region_and_data, reuse_data_is_required);
+   stop_timer("place_adjacent_deserialized_data", get_blob_frame_seq(temp), get_blob_task_id(temp), 1);
    free_blob(temp);
 }
 
@@ -272,7 +328,9 @@ void recv_reuse_data_from_edge_single_device(device_ctxt* gateway, blob* recv_da
    printf("collecting_reuse_data generated by task %d, client %d... ... \n", task_id, cli_id);
    if(overlapped_data_pool[cli_id][task_id] != NULL)
       free_self_overlapped_tile_data(gateway_model,  overlapped_data_pool[cli_id][task_id]);
+   start_timer("self_reuse_data_deserialization", get_blob_frame_seq(temp), get_blob_task_id(temp), 1);
    overlapped_data_pool[cli_id][task_id] = self_reuse_data_deserialization(gateway_model, task_id, (float*)temp->data, get_blob_frame_seq(temp));
+   stop_timer("self_reuse_data_deserialization", get_blob_frame_seq(temp), get_blob_task_id(temp), 1);
    //Should I?//free_blob(temp);
 }
 
@@ -280,7 +338,11 @@ void recv_reuse_data_from_edge_single_device(device_ctxt* gateway, blob* recv_da
 void send_reuse_data_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt, blob* task_input_blob){
    cnn_model* model = (cnn_model*)(edge_ctxt->model);
    if(model->ftp_para_reuse->schedule[get_blob_task_id(task_input_blob)] == 1) return;
+
+   start_timer("self_reuse_data_serialization", get_blob_frame_seq(task_input_blob), get_blob_task_id(task_input_blob), 1);
    blob* temp  = self_reuse_data_serialization(edge_ctxt, get_blob_task_id(task_input_blob), get_blob_frame_seq(task_input_blob));
+   stop_timer("self_reuse_data_serialization", get_blob_frame_seq(task_input_blob), get_blob_task_id(task_input_blob), 1);
+
    copy_blob_meta(temp, task_input_blob);
    //Transfer it to the gateway  
    recv_reuse_data_from_edge_single_device(gateway_ctxt, temp);

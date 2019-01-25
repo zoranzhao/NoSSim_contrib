@@ -27,7 +27,7 @@
 #define FUSED_LAYERS_MAX 16
 #endif
 
-#define NUM_OF_FUNCTIONS 6
+#define NUM_OF_FUNCTIONS 9
 
 typedef struct dp_profile_data {
   double start_time;

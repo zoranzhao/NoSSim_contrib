@@ -19,7 +19,7 @@ AR=ar
 ARFLAGS=rcs
 LDFLAGS= -lm -pthread
 CFLAGS=-Wall -fPIC
-COMMON=-I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -I. 
+COMMON=-I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -I. 
 LDLIB=-L$(DISTRIOT) -l:$(DISTRIOTLIB) -L$(DARKNET) -l:$(DARKNETLIB)
 
 ifeq ($(OPENMP), 1) 
@@ -44,7 +44,7 @@ CFLAGS+= -DARM_NEON -mfpu=neon-vfpv4 -funsafe-math-optimizations -ftree-vectoriz
 endif
 
 CFLAGS+=$(OPTS)
-OBJS = test.o test_utils.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
+OBJS = test.o test_utils.o deepthings_profile.o ftp.o inference_engine_helper.o frame_partitioner.o adjacent_reuse_data_serialization.o self_reuse_data_serialization.o deepthings_edge.o deepthings_gateway.o cmd_line_parser.o
 EXECOBJ = $(addprefix $(OBJDIR), $(OBJS))
 
 DEPS = $(wildcard */*.h) Makefile
@@ -74,7 +74,7 @@ test:
 clean_all:
 	make -C $(DISTRIOT) clean
 	make -C $(DARKNET) clean
-	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png 
+	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png *.prof 
 
 clean:
-	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png 
+	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png
