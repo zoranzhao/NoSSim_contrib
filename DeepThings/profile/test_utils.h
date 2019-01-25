@@ -17,6 +17,11 @@ void process_everything_in_gateway(void *arg);
 void transfer_data_with_number(device_ctxt* client, device_ctxt* gateway, int32_t task_num);
 void transfer_data(device_ctxt* client, device_ctxt* gateway);
 void deepthings_merge_result_thread_single_device(void *arg);
-void partition_frame_and_perform_inference_thread_single_device(void *arg);
+void partition_frame_and_perform_inference_thread_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt);
+
+/*Functions defined for testing data reuse*/
+bool* assume_all_are_missing(device_ctxt* ctxt, uint32_t task_id, uint32_t frame_num);
+void request_reuse_data_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt, blob* task_input_blob, bool* reuse_data_is_required);
+void send_reuse_data_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt, blob* task_input_blob);
 
 #endif
