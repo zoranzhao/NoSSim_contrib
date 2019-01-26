@@ -1,5 +1,5 @@
 #ifndef DEEPTHINGS_PROFILE_H
-#define DEEPTHINGS_PROFILE
+#define DEEPTHINGS_PROFILE_H
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -27,7 +27,9 @@
 #define FUSED_LAYERS_MAX 16
 #endif
 
+#ifndef NUM_OF_FUNCTIONS
 #define NUM_OF_FUNCTIONS 9
+#endif
 
 typedef struct def_deepthings_profile_data {
   double start_time;
@@ -37,17 +39,10 @@ typedef struct def_deepthings_profile_data {
   long calling_times[FRAME_NUM][PARTITIONS_MAX][2]; /*0 no data-reuse, 1 data-reuse*/
 } deepthings_profile_data;
 
-
-extern deepthings_profile_data deepthings_prof_data[NUM_OF_FUNCTIONS];
-extern char function_list[NUM_OF_FUNCTIONS][40];
-
-uint32_t get_function_id(char* function_name);
-char* get_function_name(uint32_t id);
 void dump_profile(char* filename);
-void load_profile(char * filename);
 void profile_start();
 void profile_end(uint32_t partition_h, uint32_t partition_w, uint32_t layers);
 void start_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse);
 void stop_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse);
 
-#endif
+#endif/*DEEPTHINGS_PROFILE_H*/

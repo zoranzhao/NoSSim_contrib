@@ -1,8 +1,8 @@
 #include "deepthings_profile.h"
 
-deepthings_profile_data deepthings_prof_data[NUM_OF_FUNCTIONS];
+static deepthings_profile_data deepthings_prof_data[NUM_OF_FUNCTIONS];
 
-char function_list[NUM_OF_FUNCTIONS][40]={
+static char function_list[NUM_OF_FUNCTIONS][40]={
 /*Serialization functions used in edge node devices*/
    "self_reuse_data_serialization",
    "adjacent_reuse_data_deserialization",
@@ -31,7 +31,7 @@ static inline double now_usec(){
    return (double)time.tv_sec * 1000000 + (double)time.tv_usec;
 }
 
-uint32_t get_function_id(char* function_name){
+static inline uint32_t get_function_id(char* function_name){
    uint32_t id = 0; 
    for(id = 0; id < NUM_OF_FUNCTIONS; id++){
       if(strcmp(function_name, function_list[id]) == 0) return id;
@@ -39,7 +39,7 @@ uint32_t get_function_id(char* function_name){
    return 0;
 }
 
-char* get_function_name(uint32_t id){
+static inline char* get_function_name(uint32_t id){
    if(id < NUM_OF_FUNCTIONS) return function_list[id];
    return NULL;
 }
@@ -73,45 +73,6 @@ void dump_profile(char* filename){
       }
    }
    fclose(f);
-}
-
-#define BUFFER_SIZE 200
-void load_profile(char * filename){
-   const char *delimiter = "	";
-   FILE *profile_data = fopen(filename, "r");
-   char buffer[BUFFER_SIZE];
-   char *token;
-   uint32_t line_number = 0;
-   uint32_t token_number = 0; 
-
-   if(profile_data == NULL){
-      printf("Unable to open file %s\n", filename);
-   }else{
-      while(fgets(buffer, BUFFER_SIZE, profile_data) != NULL){
-         line_number++;
-         if(line_number == 1) continue;
-         token_number = 0;
-         uint32_t function_id;
-         uint32_t frame_number;
-         uint32_t partition_number;
-         uint32_t data_reuse;
-         token = strtok(buffer, delimiter);
-         while(token != NULL){
-            token_number++;
-	    switch (token_number){
-               case 1: function_id = get_function_id(token); break;
-               case 2: frame_number = atoi(token); break;
-               case 3: partition_number = atoi(token); break;
-               case 4: data_reuse = atoi(token); break;
-               case 5: deepthings_prof_data[function_id].calling_times[frame_number][partition_number][data_reuse] = atoi(token); break;
-               case 6: deepthings_prof_data[function_id].avg_duration[frame_number][partition_number][data_reuse] = atof(token); 
-                       deepthings_prof_data[function_id].valid[frame_number][partition_number][data_reuse] = true;
-                       break;
-            }
-            token = strtok(NULL, delimiter);
-         }
-      }
-   }
 }
 
 void profile_start(){
