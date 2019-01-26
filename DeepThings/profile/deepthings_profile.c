@@ -19,13 +19,6 @@ char function_list[NUM_OF_FUNCTIONS][40]={
    "partition_and_enqueue"
 };
 
-/*
-start_timer("forward_partition", get_blob_frame_seq(temp), get_blob_task_id(temp), is_reuse);
-void start_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse);
-void stop_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse);
-*/
-
-
 static inline double now_sec(){
    struct timeval time;
    if (gettimeofday(&time,NULL)) return 0;
@@ -150,7 +143,6 @@ void profile_end(uint32_t partition_h, uint32_t partition_w, uint32_t layers){
 void start_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse){
    uint32_t function_id = get_function_id(function_name);
    deepthings_prof_data[function_id].start_time = now_usec();
-
 }
 
 void stop_timer(char* function_name, uint32_t frame_number, uint32_t partition_number, uint32_t data_reuse){
