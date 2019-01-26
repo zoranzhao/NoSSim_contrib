@@ -29,7 +29,7 @@
 
 #define NUM_OF_FUNCTIONS 9
 
-typedef struct dp_profile_data {
+typedef struct def_deepthings_profile_data {
   double start_time;
   bool valid[FRAME_NUM][PARTITIONS_MAX][2];
   double total_duration[FRAME_NUM][PARTITIONS_MAX][2]; /*0 no data-reuse, 1 data-reuse*/
