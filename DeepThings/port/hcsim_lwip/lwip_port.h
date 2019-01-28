@@ -1,14 +1,11 @@
-#ifndef NETWORK_UTIL_H
-#define NETWORK_UTIL_H
+#ifndef LWIP_NETWORK_UTIL_H
+#define LWIP_NETWORK_UTIL_H
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
+#include "lwip/sockets.h"/*Using socket interface provided by lwip*/
 #include <errno.h>
 /*Assgin port number for different services*/
 #define PORTNO 11111 //Service for job stealing and sharing
@@ -26,7 +23,7 @@
 #define ADDRSTRLEN INET6_ADDRSTRLEN
 #endif/*IPV4_TASK*/   
 
-#include "data_blob.h"
+#include "data_blob.h"/*Data blob function is defined by the DeepThings*/
 
 typedef enum proto{
    TCP,
