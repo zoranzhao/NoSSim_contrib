@@ -3,6 +3,8 @@
 #include <systemc>
 #include "HCSim.h"
 #include <cstdint>
+#include <string>
+#include <unordered_map>
 #define MAX_CORE_NUM 2
 
 class sys_call_recv_if: virtual public sc_core::sc_interface{
@@ -50,9 +52,16 @@ public:
 
 /*We also need a application context in order to capture app/lib-specific context data*/
 class app_context{
+   /*TODO, probably we need use class derivation instead of void pointer to implement the polymorphism*/
+   std::unordered_map<std::string, void*> ctxt_list;  
 public:
    /*For example, here we can have global data defined to hold application states*/
-   void* app_ctxt;
+   void add_context(std::string ctxt_name, void* ctxt){
+      ctxt_list[ctxt_name] = ctxt;
+   }
+   void* get_context(std::string ctxt_name){
+      return ctxt_list[ctxt_name];
+   }
 };
 
 typedef struct sc_process_handler_context{
