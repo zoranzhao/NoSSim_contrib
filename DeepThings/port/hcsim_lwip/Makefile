@@ -2,7 +2,7 @@ DEBUG=1
 HCSIM=1
 DISTRIOT=/home/slam/OMNET/NoSSim_contrib/DeepThings/DistrIoT
 
-VPATH=$(DISTRIOT)/src:./src
+VPATH=$(DISTRIOT)/src:./src:./lwip:./hcsim
 SLIB=libdistriot.so
 ALIB=libdistriot.a
 OBJDIR=./obj/
@@ -12,7 +12,7 @@ CXX=g++
 AR=ar
 ARFLAGS=rcs
 LDFLAGS= -lm -pthread 
-COMMON= -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -Iinclude/ -Isrc/
+COMMON= -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -Iinclude/ -Isrc/ -Ilwip/ -Ihcsim/
 CFLAGS=-Wall -fPIC
 
 ifeq ($(HCSIM), 1) 
