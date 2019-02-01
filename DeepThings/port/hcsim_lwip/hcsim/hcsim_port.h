@@ -7,6 +7,27 @@
 #include <unordered_map>
 #define MAX_CORE_NUM 2
 
+#ifndef LWIP_HDR_SYS_H
+void sys_init(void);
+typedef void (*thread_fn)(void *arg);
+struct sys_thread;
+typedef struct sys_thread* sys_thread_t;
+/*multithreading APIs*/
+extern "C" sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int stacksize, int prio);
+extern "C" void sys_thread_join(sys_thread_t thread);
+
+/*Semaphore APIs*/
+struct sys_sem;
+typedef struct sys_sem* sys_sem_t;
+extern "C" int8_t sys_sem_new(sys_sem_t *sem, uint8_t count);
+extern "C" void sys_sem_signal(sys_sem_t *s);
+extern "C" uint32_t sys_arch_sem_wait(sys_sem_t *s, uint32_t timeout);
+extern "C" void sys_sem_free(sys_sem_t *sem);
+extern "C" void sys_sleep();
+extern "C" uint32_t sys_now(void);
+extern "C" double sys_now_in_sec(void);
+#endif
+
 class sys_call_recv_if: virtual public sc_core::sc_interface{
 public:
    virtual int get_node(int os_task_id) = 0;
@@ -121,6 +142,9 @@ public:
 
    int device_type;
    int core_num;
+   os_model_context(){
+
+   }
    os_model_context(int node_id,
                     sc_core::sc_vector< sc_core::sc_port< sys_call_recv_if > >& recv_port,
                     sc_core::sc_vector< sc_core::sc_port< sys_call_send_if > >& send_port,
@@ -157,8 +181,6 @@ typedef struct sc_process_handler_context{
    app_context* app_ctxt;
    int task_id;  
 } handler_context;
-void sys_init(void);
-
 
 class simulation_context{
    std::vector< sc_core::sc_process_handle> handler_list;  
@@ -206,21 +228,4 @@ public:
 
 extern simulation_context sim_ctxt;
 
-typedef void (*thread_fn)(void *arg);
-struct sys_thread;
-typedef struct sys_thread* sys_thread_t;
-/*multithreading APIs*/
-sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int stacksize, int prio);
-void sys_thread_join(sys_thread_t thread);
-
-/*Semaphore APIs*/
-struct sys_sem;
-typedef struct sys_sem* sys_sem_t;
-int32_t sys_sem_new(struct sys_sem **sem, uint8_t count);
-void sys_sem_signal(struct sys_sem **s);
-uint32_t sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout);
-void sys_sem_free(struct sys_sem **sem);
-void sys_sleep();
-uint32_t sys_now(void);
-double sys_now_in_sec(void);
 #endif

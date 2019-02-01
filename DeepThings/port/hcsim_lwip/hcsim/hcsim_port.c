@@ -1,7 +1,7 @@
 #include "hcsim_port.h"
 
 #ifndef SYS_ARCH_TIMEOUT
-#define SYS_ARCH_TIMEOUT 1000000
+#define SYS_ARCH_TIMEOUT 0xffffffffUL
 #endif
 
 #ifndef SYS_MBOX_EMPTY
@@ -32,7 +32,7 @@
   LWIP_PLATFORM_ASSERT(message); }} while(0)
 #endif
 
-
+/*TODO: Current implementation needs to deal lwIP specifically, we need to deal with this later.*/
 
 /*Global table for simulation context lookup*/
 simulation_context sim_ctxt;
@@ -44,6 +44,31 @@ struct sys_thread {
   struct sys_thread *next;
   sc_core::sc_process_handle sc_thread;
 };
+
+/*Definition for thread-safe mailboxes*/
+#define SYS_MBOX_SIZE 128
+struct sys_mbox {
+  int id;
+  int first, last;
+  void *msgs[SYS_MBOX_SIZE];
+  struct sys_sem *not_empty;
+  struct sys_sem *not_full;
+  struct sys_sem *mutex;
+  int wait_send;
+  void * ctxt;
+};
+
+#define GLOBAL_SEMS 200
+struct sys_sem {
+   bool free;
+   int id;
+   unsigned int c;
+   sc_core::sc_event cond;
+   sc_core::sc_mutex mutex;
+   void* ctxt;
+   int blocking_task_id;
+   int blocked_task_id;
+} sems[GLOBAL_SEMS];
 
 /*Function wrapper for OS task model*/
 typedef void (*os_wrapper_fn)(os_model_context* os_model, app_context* app_ctxt, thread_fn function, void* arg, int task_id);
@@ -57,9 +82,9 @@ void wrapper(os_model_context* os_model, app_context* app_ctxt, thread_fn functi
 }
 
 sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int priority, int core){
-   os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
-   app_context* app_ctxt = sim_ctxt.get_app_ctxt( sc_core::sc_get_current_process_handle() );
-   int child_id  =  os_model->os_port->taskCreate(
+   os_model_context* os_model = sim_ctxt.get_os_ctxt(sc_core::sc_get_current_process_handle());
+   app_context* app_ctxt = sim_ctxt.get_app_ctxt(sc_core::sc_get_current_process_handle());
+   int child_id = os_model->os_port->taskCreate(
 				sc_core::sc_gen_unique_name("child_task"), 
 				HCSim::OS_RT_APERIODIC, priority, 0, 0, 
 				HCSim::DEFAULT_TS, HCSim::ALL_CORES, core);
@@ -89,18 +114,6 @@ void sys_thread_join(sys_thread_t thread){
 
 }
 
-#define GLOBAL_SEMS 200
-struct sys_sem {
-   bool free;
-   int id;
-   unsigned int c;
-   sc_core::sc_event cond;
-   sc_core::sc_mutex mutex;
-   void* ctxt;
-   int blocking_task_id;
-   int blocked_task_id;
-} sems[GLOBAL_SEMS];
-
 static struct sys_sem * sys_sem_new_internal(uint8_t count)
 {
    int i = 0;
@@ -119,7 +132,7 @@ static struct sys_sem * sys_sem_new_internal(uint8_t count)
    return sem;
 }
 
-int32_t sys_sem_new(struct sys_sem **sem, uint8_t count)
+int8_t sys_sem_new(sys_sem_t *sem, uint8_t count)
 {
    *sem = sys_sem_new_internal(count);
    if (*sem == NULL) {
@@ -130,7 +143,7 @@ int32_t sys_sem_new(struct sys_sem **sem, uint8_t count)
 
 
 void
-sys_sem_signal(struct sys_sem **s)
+sys_sem_signal(sys_sem_t *s)
 {
    struct sys_sem *sem;
    sem = *s;
@@ -144,7 +157,7 @@ sys_sem_signal(struct sys_sem **s)
 }
 
 uint32_t
-sys_arch_sem_wait(struct sys_sem **s, uint32_t timeout){
+sys_arch_sem_wait(sys_sem_t *s, uint32_t timeout){
    sc_dt::uint64 start_time;
    uint32_t time_needed = 0;
    struct sys_sem *sem;
@@ -181,7 +194,7 @@ static void sys_sem_free_internal(struct sys_sem *sem){
    sem->free=1;
 }
 
-void sys_sem_free(struct sys_sem **sem){
+void sys_sem_free(sys_sem_t *sem){
    if (sem != NULL) {
       sys_sem_free_internal(*sem);
    }
@@ -206,6 +219,13 @@ double sys_now_in_sec(void){
    /*Seconds*/
    return ((double)sys_now())/1000.0;
 }
+
+uint32_t sys_jiffies(void){
+  sc_dt::uint64 msec;
+  msec = (sc_core::sc_time_stamp().value()/1000000000) - starttime;
+  return (u32_t)(msec*1000000);
+}
+
 /*Intialization function used*/
 void sys_init(void){
    starttime = (sc_dt::uint64) (sc_core::sc_time_stamp().value()/1000000000);
@@ -213,19 +233,6 @@ void sys_init(void){
       sems[i].free = 1;
    }
 }
-
-/*Definition for thread-safe mailboxes*/
-#define SYS_MBOX_SIZE 128
-struct sys_mbox {
-  int id;
-  int first, last;
-  void *msgs[SYS_MBOX_SIZE];
-  struct sys_sem *not_empty;
-  struct sys_sem *not_full;
-  struct sys_sem *mutex;
-  int wait_send;
-  void * ctxt;
-};
 
 int8_t sys_mbox_new(struct sys_mbox **mb, int size){
   int task_id = sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle());
