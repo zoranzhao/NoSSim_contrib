@@ -1,4 +1,5 @@
-#include "hcsim_port.h"
+#include "hcsim_contexts.h"
+#include "hcsim_sys_arch.h"
 
 #ifndef SYS_ARCH_TIMEOUT
 #define SYS_ARCH_TIMEOUT 0xffffffffUL
@@ -31,8 +32,6 @@
 #define LWIP_ASSERT(message, assertion) do { if (!(assertion)) { \
   LWIP_PLATFORM_ASSERT(message); }} while(0)
 #endif
-
-/*TODO: Current implementation needs to deal lwIP specifically, we need to deal with this later.*/
 
 /*Global table for simulation context lookup*/
 simulation_context sim_ctxt;
@@ -136,9 +135,9 @@ int8_t sys_sem_new(sys_sem_t *sem, uint8_t count)
 {
    *sem = sys_sem_new_internal(count);
    if (*sem == NULL) {
-      return ERR_MEM;
+      return -1;/*ERR_MEM;*/
    }
-   return ERR_OK;
+   return 0;/*ERR_OK;*/
 }
 
 
@@ -223,7 +222,7 @@ double sys_now_in_sec(void){
 uint32_t sys_jiffies(void){
   sc_dt::uint64 msec;
   msec = (sc_core::sc_time_stamp().value()/1000000000) - starttime;
-  return (u32_t)(msec*1000000);
+  return (uint32_t)(msec*1000000);
 }
 
 /*Intialization function used*/
@@ -242,7 +241,7 @@ int8_t sys_mbox_new(struct sys_mbox **mb, int size){
   mbox = new sys_mbox;
 
   if (mbox == NULL) {
-    return ERR_MEM;
+    return -1;/*ERR_MEM;*/
   }
   mbox->id = task_id;
   //mbox->ctxt = ctxt;
@@ -275,7 +274,7 @@ sys_mbox_trypost(struct sys_mbox **mb, void *msg){
   mbox = *mb;
   if ((mbox->last + 1) >= (mbox->first + SYS_MBOX_SIZE)) {
     printf("Returning with memory error!\n");
-    return ERR_MEM;
+    return -1;/*ERR_MEM;*/
   }
   mbox->msgs[mbox->last % SYS_MBOX_SIZE] = msg;
   if (mbox->last == mbox->first) {

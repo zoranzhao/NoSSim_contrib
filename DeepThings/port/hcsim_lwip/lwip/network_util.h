@@ -1,12 +1,6 @@
-#ifndef LWIP_NETWORK_UTIL_H
-#define LWIP_NETWORK_UTIL_H
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdio.h>
-#include "lwip/sockets.h"/*Using socket interface provided by lwip*/
-#include <errno.h>
+#ifndef NETWORK_UTIL_H
+#define NETWORK_UTIL_H
+#include "lwip_ctxt.h"
 /*Assgin port number for different services*/
 #define PORTNO 11111 //Service for job stealing and sharing
 #define SMART_GATEWAY 11112 //Service for a smart gateway 
@@ -24,6 +18,29 @@
 #endif/*IPV4_TASK*/   
 
 #include "data_blob.h"/*Data blob function is defined by the DeepThings*/
+
+#if LWIP_IPV4 && LWIP_IPV6
+/** @ingroup socket */
+#define inet_ntop(af,src,dst,size) \
+    (((af) == AF_INET6) ? ip6addr_ntoa_r((const ip6_addr_t*)(src),(dst),(size)) \
+     : (((af) == AF_INET) ? ip4addr_ntoa_r((const ip4_addr_t*)(src),(dst),(size)) : NULL))
+/** @ingroup socket */
+#define inet_pton(af,src,dst) \
+    (((af) == AF_INET6) ? ip6addr_aton((src),(ip6_addr_t*)(dst)) \
+     : (((af) == AF_INET) ? ip4addr_aton((src),(ip4_addr_t*)(dst)) : 0))
+#elif LWIP_IPV4 /* LWIP_IPV4 && LWIP_IPV6 */
+#define inet_ntop(af,src,dst,size) \
+    (((af) == AF_INET) ? ip4addr_ntoa_r((const ip4_addr_t*)(src),(dst),(size)) : NULL)
+#define inet_pton(af,src,dst) \
+    (((af) == AF_INET) ? ip4addr_aton((src),(ip4_addr_t*)(dst)) : 0)
+#else /* LWIP_IPV4 && LWIP_IPV6 */
+#define inet_ntop(af,src,dst,size) \
+    (((af) == AF_INET6) ? ip6addr_ntoa_r((const ip6_addr_t*)(src),(dst),(size)) : NULL)
+#define inet_pton(af,src,dst) \
+    (((af) == AF_INET6) ? ip6addr_aton((src),(ip6_addr_t*)(dst)) : 0)
+#endif /* LWIP_IPV4 && LWIP_IPV6 */
+
+
 
 typedef enum proto{
    TCP,
@@ -43,7 +60,7 @@ typedef struct service_connection{
 /*Networking API on service client side*/
 service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno);
 void close_service_connection(service_conn* conn);
-void send_request(void* meta, uint32_t meta_size, service_conn* conn);
+void send_request(char* meta, uint32_t meta_size, service_conn* conn);
 
 /*Networking API on service server side*/
 int service_init(int portno, ctrl_proto proto);

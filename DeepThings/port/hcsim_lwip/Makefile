@@ -1,18 +1,18 @@
 DEBUG=1
 HCSIM=1
-DISTRIOT=/home/slam/OMNET/NoSSim_contrib/DeepThings/DistrIoT
+LWIP=/home/slam/OMNET/lwip-hcsim
 
-VPATH=$(DISTRIOT)/src:./src:./lwip:./hcsim
+VPATH=./src:./lwip:./hcsim
 SLIB=libdistriot.so
 ALIB=libdistriot.a
 OBJDIR=./obj/
 
 CC=gcc
-CXX=g++
+CXX=clang++
 AR=ar
 ARFLAGS=rcs
 LDFLAGS= -lm -pthread 
-COMMON= -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -Iinclude/ -Isrc/ -Ilwip/ -Ihcsim/
+COMMON= -Iinclude/ -Isrc/ -Ilwip/ -Ihcsim/ -I$(LWIP)/src/include -I$(LWIP)/ports/hcsim -I$(LWIP)/ports/port/include
 CFLAGS=-Wall -fPIC
 
 ifeq ($(HCSIM), 1) 
@@ -31,7 +31,7 @@ endif
 
 CFLAGS+=$(OPTS)
 ifeq ($(HCSIM), 1) 
-OBJ = thread_safe_queue.o hcsim_port.o data_blob.o network_util.o exec_ctrl.o gateway.o client.o global_context.o
+OBJ = thread_safe_queue.o data_blob.o exec_ctrl.o gateway.o client.o global_context.o network_util.o
 else
 OBJ = thread_safe_queue.o thread_util.o data_blob.o network_util.o exec_ctrl.o gateway.o client.o global_context.o
 endif 

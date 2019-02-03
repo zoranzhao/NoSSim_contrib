@@ -1,4 +1,4 @@
-#include "lwip_port.h"
+#include "network_util.h"
 
 static inline void read_from_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, struct sockaddr *from, socklen_t *fromlen);
 static inline void write_to_sock(int sock, ctrl_proto proto, uint8_t* buffer, uint32_t bytes_length, const struct sockaddr *to, socklen_t tolen);
@@ -144,8 +144,8 @@ blob* recv_data(service_conn* conn){
    return tmp;
 }
 
-void send_request(void* req, uint32_t req_size, service_conn* conn){
-   blob* temp = new_blob_and_copy_data(0, req_size, req);
+void send_request(char* req, uint32_t req_size, service_conn* conn){
+   blob* temp = new_blob_and_copy_data(0, req_size, (unsigned char*)req);
    send_data(temp, conn);
    free_blob(temp);  
 }

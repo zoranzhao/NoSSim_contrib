@@ -1,32 +1,11 @@
-#ifndef HCSIM_PORT_H
-#define HCSIM_PORT_H
+#ifndef HCSIM_CONTEXTS_H
+#define HCSIM_CONTEXTS_H
 #include <systemc>
 #include "HCSim.h"
 #include <cstdint>
 #include <string>
 #include <unordered_map>
 #define MAX_CORE_NUM 2
-
-#ifndef LWIP_HDR_SYS_H
-void sys_init(void);
-typedef void (*thread_fn)(void *arg);
-struct sys_thread;
-typedef struct sys_thread* sys_thread_t;
-/*multithreading APIs*/
-extern "C" sys_thread_t sys_thread_new(const char *name, thread_fn function, void *arg, int stacksize, int prio);
-extern "C" void sys_thread_join(sys_thread_t thread);
-
-/*Semaphore APIs*/
-struct sys_sem;
-typedef struct sys_sem* sys_sem_t;
-extern "C" int8_t sys_sem_new(sys_sem_t *sem, uint8_t count);
-extern "C" void sys_sem_signal(sys_sem_t *s);
-extern "C" uint32_t sys_arch_sem_wait(sys_sem_t *s, uint32_t timeout);
-extern "C" void sys_sem_free(sys_sem_t *sem);
-extern "C" void sys_sleep();
-extern "C" uint32_t sys_now(void);
-extern "C" double sys_now_in_sec(void);
-#endif
 
 class sys_call_recv_if: virtual public sc_core::sc_interface{
 public:
@@ -188,7 +167,6 @@ class simulation_context{
    
 public:
    simulation_context(){
-      sys_init();
       std::cout << "Construct a new simulation context" << std::endl; 
    }
    void register_task(os_model_context* os_ctxt, app_context* app_ctxt, int task_id, sc_core::sc_process_handle handler){
