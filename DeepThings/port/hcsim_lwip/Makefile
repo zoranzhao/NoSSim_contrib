@@ -12,7 +12,7 @@ CXX=clang++
 AR=ar
 ARFLAGS=rcs
 LDFLAGS= -lm -pthread 
-COMMON= -Iinclude/ -Isrc/ -Ilwip/ -Ihcsim/ -I$(LWIP)/src/include -I$(LWIP)/ports/hcsim -I$(LWIP)/ports/port/include
+COMMON= -Iinclude/ -Isrc/ -Ilwip/ -Ihcsim/ -I$(LWIP)/src/include -I$(LWIP)/ports/hcsim -I$(LWIP)/ports/hcsim/context -I$(LWIP)/ports/port/include
 CFLAGS=-Wall -fPIC
 
 ifeq ($(HCSIM), 1) 
