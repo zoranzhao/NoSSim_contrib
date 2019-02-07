@@ -187,6 +187,8 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       /*Accept incoming connection*/
       if(proto == TCP){
          newsockfd = lwip_accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+         int flags =1;
+         lwip_setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
       }else if(proto == UDP){
          newsockfd = sockfd;
       }else{ 
