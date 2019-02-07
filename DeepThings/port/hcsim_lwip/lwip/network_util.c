@@ -70,8 +70,9 @@ service_conn* connect_service(ctrl_proto proto, const char *dest_ip, int portno)
 #elif IPV6_TASK/*IPV4_TASK*/
       sockfd = lwip_socket(AF_INET6, SOCK_STREAM, 0);
 #endif/*IPV4_TASK*/
-      if (lwip_connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0){
-         printf("ERROR connecting to %s on Port %d\n", dest_ip, portno);
+      int err = lwip_connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr));
+      if (err < 0){
+         printf("ERROR connecting to %s on Port %d, error code is: %d\n", dest_ip, portno, err);
       }
    } else if (proto == UDP) {
 #if IPV4_TASK
@@ -233,6 +234,8 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       /*Accept incoming connection*/
       if(proto == TCP){
          newsockfd = lwip_accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
+         int flags =1;
+         lwip_setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
       }else if(proto == UDP){
          newsockfd = sockfd;
       }else{ 
