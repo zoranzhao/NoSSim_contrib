@@ -15,4 +15,4 @@ endif
 # disable anoying "... hides overloaded virtual function" warning
 CFLAGS += -Wno-overloaded-virtual
 
-LIBS += -llwipapps -llwip4 -loppsystemc$D -lhcsim -lrt
+LIBS += -ldeepthings -ldarknet -ldistriot -llwipapps -llwip4 -loppsystemc$D -lhcsim -lrt
