@@ -167,11 +167,14 @@ MACAddress CliWrapper::resolveDestMACAddress()
     AddrNode3.tryParse(addrNode3);
 
     AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
-    AP.tryParse("10:00:00:00:00:00");
+    //AP.tryParse("10:00:00:00:00:00");
 
     //The address is used in 6LowPAN test
-  
-    AddrAll.tryParse("00:10:00:00:00:00");
+    if(System->NodeID == 0) //send to node 1
+       return AddrNode1;
+    if(System->NodeID == 1) //send to node 0
+       return AddrNode0;
+    //AddrAll.tryParse("00:10:00:00:00:00");
 
     return  AddrAll;
 
