@@ -41,7 +41,7 @@ module SmartAccessPoint
         string macTableType = default("MACAddressTable"); // type of the ~IMACAddressTable
         int numRadios = default(1);               // the number of radios in the access point
         bool hasStatus = default(false);
-        wlan[*].mgmtType = default("Ieee80211MgmtAP");
+        wlan[*].mgmtType = default("Ieee80211MgmtAPSimplified");
         eth[*].encapType = "EtherEncapDummy";
         *.interfaceTableModule = default(absPath(".interfaceTable"));
     gates:
@@ -203,10 +203,15 @@ network Cluster
             parameters:
                 @display("p=100,100;r=,,#707070");
         }
-        ap: SmartAccessPoint {
-            parameters:
-                @display("p=200,200;r=,,#707070");
-                wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
+        //ap: SmartAccessPoint {
+        //    parameters:
+        //        @display("p=200,200;r=,,#707070");
+        //        wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
+        //}
+
+        ap: AccessPoint {
+            @display("p=200,200;r=,,#707070");
+            wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
         }
         radioMedium: Ieee80211ScalarRadioMedium {
             parameters:
