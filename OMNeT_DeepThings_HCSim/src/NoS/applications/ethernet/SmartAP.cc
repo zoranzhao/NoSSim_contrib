@@ -88,10 +88,10 @@ void SmartAP::handleMessage(cMessage *msg)
 void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
 {
     //int arrivalGate = frame->getArrivalGate()->getIndex();
-    std::cout << "Recving infomation at AP ... ... ..." << std::endl;
-    std::cout << "IP Address of gateway is: " << bridgeAddress << std::endl;
+    //std::cout << "Recving infomation at AP ... ... ..." << std::endl;
+    //std::cout << "IP Address of gateway is: " << bridgeAddress << std::endl;
 
-    std::cout << frame->getDest() << std::endl;
+    //std::cout << frame->getDest() << std::endl;
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(frame->getEncapsulatedPacket());
     
     char* image_buf;

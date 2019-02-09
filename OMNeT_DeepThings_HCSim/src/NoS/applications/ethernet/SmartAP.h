@@ -37,7 +37,7 @@ class INET_API SmartAP : public cSimpleModule, public ILifecycle
   public:
     artificial_example *System; 
     SmartAP(){
-        System = new artificial_example ("mix_taskset_cli", 0); 
+        System = new artificial_example ("mix_taskset_cli", 2); 
         System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
     }
 
