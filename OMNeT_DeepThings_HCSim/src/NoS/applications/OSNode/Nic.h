@@ -62,14 +62,14 @@ class Nic : public sc_module {
 	}
 
 	void notify_sending(){  
-		sent.notify(sc_core::SC_ZERO_TIME); 
+		sent.notify(); 
 	}
 
 	void notify_receiving(char* fileBuffer, unsigned int size){  
         	data_recv = fileBuffer;
 		size_recv = size;
 
-		recvd.notify(sc_core::SC_ZERO_TIME); 
+		recvd.notify(); 
 	}
 
 

@@ -43,7 +43,7 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
         this->id = id;
         this->end_sim_time = end_sim_time;
 	this->node_id = node_id;
-        this->init_core = 1;
+        this->init_core = 0;
 	recv_port.init(2);
 	send_port.init(2);
         SC_THREAD(run_jobs);

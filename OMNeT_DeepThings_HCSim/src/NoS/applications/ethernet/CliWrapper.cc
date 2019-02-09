@@ -224,6 +224,7 @@ void CliWrapper::sendPacket(cMessage *msg)
 
 
     emit(sentPkSignal, datapacket);
+
     send(datapacket, "out");
     packetsSent++;
 }

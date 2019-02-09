@@ -49,7 +49,7 @@ void steal_partition_and_perform_inference_thread_no_reuse_no_gateway(void *arg)
       close_service_connection(conn);
       if(temp->id == -1){
          free_blob(temp);
-         sys_sleep(100);
+         sys_sleep(50);
          continue;
       }
       bool data_ready = true;
@@ -156,7 +156,7 @@ void steal_and_process_thread_no_gateway(void *arg){
       if(temp->id == -1){
          free_blob(temp);
          printf("Nothing is available in victim device!\n");
-         sys_sleep(100);
+         sys_sleep(50);
          continue;
       }
       printf("Process task remotely, frame %d, task is %d\n", get_blob_frame_seq(temp), get_blob_task_id(temp));
