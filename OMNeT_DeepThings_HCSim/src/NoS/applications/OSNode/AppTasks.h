@@ -104,6 +104,7 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
         //if(node_id==1) test_stealer_client(node_id);
         if(node_id==0) test_deepthings_victim_edge(node_id);
         if(node_id==1) test_deepthings_stealer_edge(node_id);
+        if(node_id==2) test_deepthings_stealer_edge(node_id);
 
         //if(node_id==0) test_socket_server(node_id);
         //if(node_id==1) test_socket_client(node_id);
