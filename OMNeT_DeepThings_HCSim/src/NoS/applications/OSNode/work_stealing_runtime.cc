@@ -21,10 +21,10 @@ void partition_frame_and_perform_inference_thread_no_reuse_no_gateway(void *arg)
          temp = try_dequeue(ctxt->task_queue);
          if(temp == NULL) break;
          bool data_ready = false;
-         process_task_single_device(ctxt, temp, data_ready);
          os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
-         os_model->os_port->timeWait(2000000000000, sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
-         //os_model->os_port->syncGlobalTime(sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
+         os_model->os_port->timeWait(1200000000000, sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
+         os_model->os_port->syncGlobalTime(sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
+         process_task_single_device(ctxt, temp, data_ready);
          free_blob(temp);
 
       }
@@ -56,7 +56,7 @@ void steal_partition_and_perform_inference_thread_no_reuse_no_gateway(void *arg)
       process_task_single_device(ctxt, temp, data_ready);
       os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
       os_model->os_port->timeWait(3000000000000, sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
-      //os_model->os_port->syncGlobalTime(sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
+      os_model->os_port->syncGlobalTime(sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
       printf("Process task remotely, frame %d, task is %d, size is %d\n", get_blob_frame_seq(temp), get_blob_task_id(temp), temp->size);
       free_blob(temp);
    }
@@ -73,7 +73,7 @@ void test_deepthings_stealer_edge(uint32_t edge_id){
 
    device_ctxt* ctxt = deepthings_edge_init(N, M, fused_layers, network, weights, edge_id);
 
-   sys_thread_t t1 = sys_thread_new("steal_partition_and_perform_inference_thread_no_reuse_no_gateway", steal_partition_and_perform_inference_thread_no_reuse_no_gateway, ctxt, 20, 0);
+   sys_thread_t t1 = sys_thread_new("steal_partition_and_perform_inference_thread_no_reuse_no_gateway", steal_partition_and_perform_inference_thread_no_reuse_no_gateway, ctxt, 102, 0);
 
    sys_thread_join(t1);
 }
@@ -88,8 +88,8 @@ void test_deepthings_victim_edge(uint32_t edge_id){//edge_id == 0;
 
    device_ctxt* ctxt = deepthings_edge_init(N, M, fused_layers, network, weights, edge_id);
 
-   sys_thread_t t1 = sys_thread_new("partition_frame_and_perform_inference_thread_no_reuse_no_gateway", partition_frame_and_perform_inference_thread_no_reuse_no_gateway, ctxt, 40, 0);
-   sys_thread_t t3 = sys_thread_new("serve_stealing_thread", serve_stealing_thread, ctxt, 20, 0);
+   sys_thread_t t1 = sys_thread_new("partition_frame_and_perform_inference_thread_no_reuse_no_gateway", partition_frame_and_perform_inference_thread_no_reuse_no_gateway, ctxt, 102, 0);
+   sys_thread_t t3 = sys_thread_new("serve_stealing_thread", serve_stealing_thread, ctxt, 100, 0);
 
    sys_thread_join(t1);
    sys_thread_join(t3);
