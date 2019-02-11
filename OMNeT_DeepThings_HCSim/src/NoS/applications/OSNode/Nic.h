@@ -68,7 +68,7 @@ class Nic : public sc_module {
 	void notify_receiving(char* fileBuffer, unsigned int size){  
         	data_recv = fileBuffer;
 		size_recv = size;
-
+                //if(NodeID==0) std::cout << "Pkt recieved, size is: " << size << " time is:" << sc_core::sc_time_stamp().to_seconds() << "\n"; 
 		recvd.notify(); 
 	}
 
