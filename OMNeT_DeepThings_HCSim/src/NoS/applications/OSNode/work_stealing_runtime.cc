@@ -1,6 +1,9 @@
 #include "work_stealing_runtime.h"
+#if IPV4_TASK
 const char* addr_list[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
-
+#elif IPV6_TASK/*IPV4_TASK*/
+const char* addr_list[MAX_EDGE_NUM] = {"100:0:200:0:300:0:400:", "100:0:200:0:300:0:500:", "100:0:200:0:300:0:600:", "100:0:200:0:300:0:700:", "100:0:200:0:300:0:800:", "100:0:200:0:300:0:900:"};
+#endif/*IPV4_TASK*/   
 
 void partition_frame_and_perform_inference_thread_no_reuse_no_gateway(void *arg){
    device_ctxt* ctxt = (device_ctxt*)arg;

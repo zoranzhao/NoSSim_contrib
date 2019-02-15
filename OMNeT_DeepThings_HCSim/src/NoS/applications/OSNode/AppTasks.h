@@ -12,11 +12,13 @@
 #ifndef SC_TASK_MODEL__H
 #define SC_TASK_MODEL__H
 
+#define LOWPAN6_TASK 1
 #define PROTO TCP
 
 #define PORTNO 11111 //Service for job stealing and sharing
 #define SMART_GATEWAY 11112 //Service for a smart gateway 
 #define START_CTRL 11113 //Control the start and stop of a service
+
 
 void tcpip_init_done(void *arg);
 
