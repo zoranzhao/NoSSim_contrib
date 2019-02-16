@@ -130,10 +130,10 @@ network Cluster
             parameters:
                 @display("p=100,100;r=,,#707070");
         }
-        srvHost: ClusterServer {
-            parameters:
-                @display("p=150,150;r=,,#707070");
-        }
+        //srvHost: ClusterServer {
+        //    parameters:
+        //        @display("p=150,150;r=,,#707070");
+        //}
         radioMedium: Ieee802154NarrowbandScalarRadioMedium {
             parameters:
                @display("p=61,46");

@@ -251,7 +251,6 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       /*First recv the request and look up the handler table*/
       req = recv_request(conn);
       handler_id =  look_up_handler_table((char*)req, handler_name, handler_num); 
-   
       free(req);
       if(handler_id == handler_num){printf("Operation is not supported!\n"); return;}
       /*Recv meta control data and pick up the correct handler*/
@@ -340,3 +339,13 @@ static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const
    }
    return conn; 
 }
+
+void get_dest_ip_string(char* ip_string, service_conn* conn){
+   #if IPV4_TASK
+   inet_ntop(conn->serv_addr_ptr->sin_family, &(conn->serv_addr_ptr->sin_addr), ip_string, ADDRSTRLEN);
+   #elif IPV6_TASK/*IPV4_TASK*/
+   inet_ntop(conn->serv_addr_ptr->sin6_family, &(conn->serv_addr_ptr->sin6_addr), ip_string, ADDRSTRLEN);
+   #endif/*IPV4_TASK*/ 
+}
+
+

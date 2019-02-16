@@ -76,7 +76,7 @@ void SmartAP::handleMessage(cMessage *msg)
 			datapacket->setFileBuffer(ii, ((OmnetIf_pkt*)(msg->getContextPointer()))->getFileBuffer(ii));
 		}
 		sendAPPacket(datapacket);
-		System -> NetworkInterfaceCard1->notify_sending();
+		//System -> NetworkInterfaceCard1->notify_sending();
 		delete(msg);
 	} 
     }
@@ -90,8 +90,7 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     //int arrivalGate = frame->getArrivalGate()->getIndex();
     //std::cout << "Recving infomation at AP ... ... ..." << std::endl;
     //std::cout << "IP Address of gateway is: " << bridgeAddress << std::endl;
-
-    //std::cout << frame->getDest() << std::endl;
+    //std::cout << "The destination is" << frame->getDest() << std::endl;
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(frame->getEncapsulatedPacket());
     
     char* image_buf;
@@ -100,7 +99,7 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     for(int ii=0; ii<buf_size; ii++){
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
-    System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
+    //System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
 
     delete frame;
 }
@@ -136,9 +135,16 @@ void SmartAP::sendAPPacket(EtherWrapperResp * datapacket)
 
     send(frame, "ifOut", portNum);    
 }
-
-
-
+/*
+    Ieee802Ctrl *etherctrl = new Ieee802Ctrl();
+    etherctrl->setSsap(localSAP);
+    etherctrl->setDsap(destSap);
+    etherctrl->setDest(resolveDestMACAddress());
+    datapacket->setControlInfo(etherctrl);
+    emit(sentPkSignal, datapacket);
+    send(datapacket, "out");
+    packetsSent++;
+*/
 
 void SmartAP::start()
 {

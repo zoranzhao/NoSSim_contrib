@@ -1,6 +1,7 @@
 [General]
 network = Cluster
 scheduler-class = SC_Scheduler
+#**.cmdenv-log-level = detail
 #cmdenv-output-file = omnetpp.log
 #debug-on-errors = true
 #tkenv-plugin-path = ../../../etc/plugins
@@ -8,31 +9,33 @@ scheduler-class = SC_Scheduler
 
 **.constraintAreaMinX = 0m
 **.constraintAreaMinY = 0m
-**.constraintAreaMaxX = 600m
-**.constraintAreaMaxY = 600m
+**.constraintAreaMaxX = 10m
+**.constraintAreaMaxY = 10m
 **.constraintAreaMinZ = 0m
 **.constraintAreaMaxZ = 0m
 
 
 # positions
 **.mobility.initFromDisplayString = false
-**.mobility.initialY = 200m
+**.mobility.initialY = 2m
 **.mobility.initialZ = 0m
 **.srvHost.mobility.initialX = 0m
 
-**.cliHost.mobility.initialX = 100m
-**.cliHost[0].mobility.initialX = 10m
-**.cliHost[1].mobility.initialX = 20m
-**.cliHost[2].mobility.initialX = 30m
-**.cliHost[3].mobility.initialX = 15m
-**.cliHost[4].mobility.initialX = 25m
-**.cliHost[5].mobility.initialX = 36m
+#**.cliHost.mobility.initialX = 100m
+**.cliHost[0].mobility.initialX = 1m
+**.cliHost[1].mobility.initialX = 2m
+**.cliHost[0].mobility.initialY = 1m
+**.cliHost[1].mobility.initialY = 2m
+#**.cliHost[2].mobility.initialX = 30m
+#**.cliHost[3].mobility.initialX = 15m
+#**.cliHost[4].mobility.initialX = 25m
+#**.cliHost[5].mobility.initialX = 36m
 
 
 
-**.debug = true
-**.coreDebug = false
-**.channelNumber = 1
+#**.debug = true
+#**.coreDebug = false
+#**.channelNumber = 1
 #**.cliHost[0].cli.clientID = 0
 #**.cliHost[1].cli.clientID = 1
 
@@ -50,16 +53,16 @@ scheduler-class = SC_Scheduler
 # access point
 **.mac.queueLength = 10000000
 #**.mac.rxSetupTime = 0.0017s
-**.srvHost.wlan.mac.address =    "00:10:00:00:00:00"
-**.cliHost[0].wlan.mac.address = "00:00:10:00:00:00"
-**.cliHost[1].wlan.mac.address = "00:00:01:00:00:00"
+#**.srvHost.wlan.mac.address =    "00:10:00:00:00:00"
+**.cliHost[0].wlan.mac.address = "00:10:00:00:00:00"
+**.cliHost[1].wlan.mac.address = "00:00:10:00:00:00"
 **.cliHost[2].wlan.mac.address = "00:00:00:10:00:00"
-**.cliHost[3].wlan.mac.address = "00:00:00:01:00:00"
-**.cliHost[4].wlan.mac.address = "00:00:00:00:10:00"
-**.cliHost[5].wlan.mac.address = "00:00:00:00:01:00"
+**.cliHost[3].wlan.mac.address = "00:00:00:00:10:00"
+**.cliHost[4].wlan.mac.address = "00:00:00:00:01:00"
+**.cliHost[5].wlan.mac.address = "00:00:00:00:00:10"
 
-**.macMaxFrameRetries = 300
-**.macMaxCSMABackoffs = 301
+**.macMaxFrameRetries = 100
+**.macMaxCSMABackoffs = 101
 
 **.wlan.radio.transmitter.preambleDuration = 0
 
@@ -88,5 +91,5 @@ scheduler-class = SC_Scheduler
 **.srv.AddrNode2 = "00:00:00:10:00:00"
 **.srv.AddrNode3 = "00:00:00:00:10:00"
 
-Cluster.numCli = 6
+Cluster.numCli = 2
 

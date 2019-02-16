@@ -167,13 +167,12 @@ MACAddress CliWrapper::resolveDestMACAddress()
     AddrNode3.tryParse(addrNode3);
 
     AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
-    //AP.tryParse("10:00:00:00:00:00");
-
+    //AP.tryParse("20:00:00:00:00:00");
     //The address is used in 6LowPAN test
-    if(System->NodeID == 1) //send to node 1
-       return AddrNode0;
-    if(System->NodeID == 0) //send to node 0
-       return AddrNode1;
+    //if(System->NodeID == 1) //send to node 1
+       //return AP;
+    //if(System->NodeID == 0) //send to node 0
+       //return AddrNode1;
     //AddrAll.tryParse("00:10:00:00:00:00");
 
     return  AddrAll;
@@ -194,10 +193,6 @@ void CliWrapper::registerDSAP(int dsap)
 
 void CliWrapper::sendPacket(cMessage *msg)
 {
-//    if ((((LwipCntxt*)   (System->getLwipCtxt()) )->NodeID)==2)
-//    std::cout << "Sending to the node ID :" << (((LwipCntxt*)   (System->getLwipCtxt()) )->DestNodeID)<<std::endl;
-//    std::cout << "EtherMserCli sending to the node ID :" << (((LwipCntxt*)   (System->getLwipCtxt()) )->DestNodeID)<<std::endl;    
-
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(msg);
     seqNum++;
 
@@ -208,20 +203,11 @@ void CliWrapper::sendPacket(cMessage *msg)
     datapacket->setName(msgname);   
     datapacket->setRequestId(seqNum);
 
-    //long len = reqLength->longValue();
-
-    //datapacket->setByteLength(len);
-
-    //long respLen = respLength->longValue();
-    //datapacket->setResponseBytes(respLen);
-
     Ieee802Ctrl *etherctrl = new Ieee802Ctrl();
     etherctrl->setSsap(localSAP);
     etherctrl->setDsap(remoteSAP);
     etherctrl->setDest(destMACAddress);
     datapacket->setControlInfo(etherctrl);
-
-
 
     emit(sentPkSignal, datapacket);
 
@@ -237,7 +223,7 @@ void CliWrapper::receivePacket(cPacket *msg)
     int buf_size =    datapacket->getFileBufferArraySize();
     image_buf = (char*) malloc(buf_size);
     for(int ii=0; ii<buf_size; ii++){
-	image_buf[ii]=datapacket->getFileBuffer(ii);
+	      image_buf[ii]=datapacket->getFileBuffer(ii);
     }
     System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
     packetsReceived++;

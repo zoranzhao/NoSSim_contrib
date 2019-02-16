@@ -56,7 +56,7 @@ void steal_partition_and_perform_inference_thread_no_reuse_no_gateway(void *arg)
          continue;
       }
       bool data_ready = true;
-      printf("Get task remotely, frame %d, task is %d\n", get_blob_frame_seq(temp), get_blob_task_id(temp));
+      printf("Get task remotely, frame %d, task is %d, time is %f\n", get_blob_frame_seq(temp), get_blob_task_id(temp), sc_core::sc_time_stamp().to_seconds());
       process_task_single_device(ctxt, temp, data_ready);
       os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
       os_model->os_port->timeWait(3000000000000, sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
