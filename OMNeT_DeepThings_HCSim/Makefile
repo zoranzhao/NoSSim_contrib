@@ -2,6 +2,7 @@ OS_MODEL=/home/slam/OMNET/HCSim
 LWIP=/home/slam/OMNET/lwip-hcsim
 LWIP_LIB=/home/slam/OMNET/lwip-hcsim/ports
 HELPER=/home/slam/OMNET/lwip-hcsim/ports/hcsim/context
+JSONPARSER=../../tools/json
 
 DISTRIOT=/home/slam/OMNET/NoSSim_contrib/DeepThings/port/hcsim_lwip
 DEEPTHINGS=/home/slam/OMNET/NoSSim_contrib/DeepThings/DeepThings
@@ -29,7 +30,7 @@ cleanall: checkmakefiles
 	@rm -f src/Makefile src/$(PKG_NAME)/features.h
 
 MAKEMAKE_OPTIONS := -f --deep -o $(MODEL_EXE) -O out --no-deep-includes -I. -I.. -I./NoS/applications -I./NoS/applications/OSNode \
-		 -I$(SYSTEMC)/include  -I./src/OSNode \
+		 -I$(SYSTEMC)/include  -I./src/OSNode -I$(JSONPARSER) \
  		 -I$(OS_MODEL)/include -I$(LWIP)/src/include -I$(LWIP)/ports/port/include -I$(LWIP)/src/include/ipv4 -I$(LWIP)/lwip/src  -I$(LWIP)/ports/hcsim -I$(HELPER) \
 		 -L$(LWIP_LIB)  -L$(HELPER)  -L$(OS_MODEL)/lib \
                  -I$(DISTRIOT)/include -I$(DISTRIOT)/src -I$(DISTRIOT)/hcsim -I$(DISTRIOT)/lwip -I$(DEEPTHINGS)/include -I$(DEEPTHINGS)/src \
