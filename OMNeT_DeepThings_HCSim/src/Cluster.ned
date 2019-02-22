@@ -132,7 +132,6 @@ module ClusterClient
 
         cli: CliWrapper {
             parameters:
-                registerSAP = false;
                 @display("b=40,24;p=180,60,col");
         }
 
@@ -207,16 +206,16 @@ network Cluster
             parameters:
                 @display("p=100,100;r=,,#707070");
         }
-        ap: SmartAccessPoint {
-            parameters:
-                @display("p=200,200;r=,,#707070");
-                wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
-        }
-
-        //ap: AccessPoint {
-        //    @display("p=200,200;r=,,#707070");
-        //    wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
+        //ap: SmartAccessPoint {
+          //  parameters:
+          //      @display("p=200,200;r=,,#707070");
+          //      wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
         //}
+
+        ap: AccessPoint {
+            @display("p=200,200;r=,,#707070");
+            wlan[*].mgmtType = "Ieee80211MgmtAPSimplified";
+        }
         radioMedium: Ieee80211ScalarRadioMedium {
             parameters:
                 @display("p=61,46");

@@ -27,7 +27,7 @@ void process_everything_in_gateway(void *arg){
 
 
 void process_task_single_device(device_ctxt* ctxt, blob* temp, bool is_reuse){
-   printf("Task is: %d, frame number is %d\n", get_blob_task_id(temp), get_blob_frame_seq(temp));
+   //printf("Task is: %d, frame number is %d\n", get_blob_task_id(temp), get_blob_frame_seq(temp));
    cnn_model* model = (cnn_model*)(ctxt->model);
    blob* result;
    set_model_input(model, (float*)temp->data);

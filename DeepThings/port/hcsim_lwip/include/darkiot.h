@@ -19,7 +19,7 @@
 #include "gateway.h"
 #include "global_context.h"
 
-#define DEBUG_FLAG 1
+#define DEBUG_FLAG 0
 
 #endif
 

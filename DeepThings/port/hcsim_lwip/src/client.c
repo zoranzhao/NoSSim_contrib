@@ -99,21 +99,33 @@ void send_result_thread(void *arg){
    uint32_t task_counter = 0;   
 #endif
    while(1){
+      os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
       temp = dequeue(ctxt->result_queue);
+      //if(os_model->node_id==0) {
+      //    std::cout << "==========Get result from queue========== at time: " << sc_core::sc_time_stamp().to_seconds() << std::endl;
+      //    printf("send_result for task %d:%d, total number is %d\n", get_blob_cli_id(temp), get_blob_task_id(temp), task_counter); 
+      //}
       conn = connect_service(TCP, ctxt->gateway_local_addr, RESULT_COLLECT_PORT);
       send_request("result_gateway", 20, conn);
+      //if(os_model->node_id==0) {
+      //    std::cout << "==========Connected for sending result ========== at time:" << sc_core::sc_time_stamp().to_seconds() << std::endl;
+      //}
 #if DEBUG_FLAG
       task_counter ++;  
       printf("send_result for task %d:%d, total number is %d\n", get_blob_cli_id(temp), get_blob_task_id(temp), task_counter); 
 #endif
       send_data(temp, conn);
+      //if(os_model->node_id==0) {
+      //    std::cout << "==========Sent result==========" << std::endl;
+      //    printf("send_result for task %d:%d, total number is %d\n", get_blob_cli_id(temp), get_blob_task_id(temp), task_counter); 
+      //}
       free_blob(temp);
       close_service_connection(conn);
    }
 }
 
 void* steal_client(void* srv_conn, void* arg){
-   printf("steal_client ... ... \n");
+   //printf("steal_client ... ... \n");
    service_conn *conn = (service_conn *)srv_conn;
    device_ctxt* ctxt = (device_ctxt*)arg;
    blob* temp = try_dequeue(ctxt->task_queue);
@@ -121,9 +133,11 @@ void* steal_client(void* srv_conn, void* arg){
       char data[20]="empty";
       temp = new_blob_and_copy_data(-1, 20, (uint8_t*)data);
    }
-#if DEBUG_FLAG
-   printf("Stolen local task is %d\n", temp->id);
-#endif
+//#if DEBUG_FLAG
+   char ipaddr[100];
+   get_dest_ip_string(ipaddr, conn);
+   printf("Hand out local task %d, stolen by %s, at time %f\n", temp->id, ipaddr, sc_core::sc_time_stamp().to_seconds());
+//#endif
    send_data(temp, conn);
    free_blob(temp);
    return NULL;

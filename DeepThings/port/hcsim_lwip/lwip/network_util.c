@@ -106,13 +106,22 @@ void send_data(blob *temp, service_conn* conn){
    meta = temp->meta;
    meta_size = temp->meta_size;
    id = temp->id;
+   os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
+   char ip_string[50];
+   get_dest_ip_string(ip_string, conn);
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&meta_size, sizeof(meta_size), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   //if(os_model->node_id == 0) std::cout << "0 write_to_sock "<<ip_string<<" ... ... "<< sizeof(meta_size) <<":" << sc_core::sc_time_stamp().to_seconds() << std::endl;  
    if(meta_size > 0)
       write_to_sock(conn->sockfd, conn->proto, (uint8_t*)meta, meta_size, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   //if(os_model->node_id == 0) std::cout << "1 write_to_sock "<<ip_string<<" ... ... "<< meta_size <<":" << sc_core::sc_time_stamp().to_seconds() << std::endl;  
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&id, sizeof(id), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   //if(os_model->node_id == 0) std::cout << "2 write_to_sock "<<ip_string<<" ... ... "<< sizeof(id) <<":" << sc_core::sc_time_stamp().to_seconds() << std::endl;  
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)&bytes_length, sizeof(bytes_length), (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   //if(os_model->node_id == 0) std::cout << "3 write_to_sock "<<ip_string<<" ... ... "<< sizeof(bytes_length) <<":" << sc_core::sc_time_stamp().to_seconds() << std::endl;  
    write_to_sock(conn->sockfd, conn->proto, (uint8_t*)data, bytes_length, (struct sockaddr *) (conn->serv_addr_ptr), sizeof(struct sockaddr));
+   //if(os_model->node_id == 0) std::cout << "4 write_to_sock "<<ip_string<<" ... ... "<< bytes_length <<":" << sc_core::sc_time_stamp().to_seconds() << std::endl;  
 }
+
 
 blob* recv_data(service_conn* conn){
    uint8_t* buffer;
@@ -187,8 +196,8 @@ void start_service_for_n_times(int sockfd, ctrl_proto proto, const char* handler
       /*Accept incoming connection*/
       if(proto == TCP){
          newsockfd = lwip_accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-         int flags =1;
-         lwip_setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
+         //int flags =1;
+         //lwip_setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
       }else if(proto == UDP){
          newsockfd = sockfd;
       }else{ 
@@ -236,8 +245,8 @@ void start_service(int sockfd, ctrl_proto proto, const char* handler_name[], uin
       /*Accept incoming connection*/
       if(proto == TCP){
          newsockfd = lwip_accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);
-         int flags =1;
-         lwip_setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
+         //int flags =1;
+         //lwip_setsockopt(newsockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
       }else if(proto == UDP){
          newsockfd = sockfd;
       }else{ 
@@ -318,23 +327,21 @@ static inline service_conn* new_service_conn(int sockfd, ctrl_proto proto, const
    if(addr!=NULL){
       conn->serv_addr_ptr = addr;
    }else{   
-      ip_addr_t dstaddr;
+      //ip_addr_t dstaddr;//lwip
       #if IPV4_TASK
       conn->serv_addr_ptr = (struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
       conn->serv_addr_ptr->sin_family = AF_INET;
       conn->serv_addr_ptr->sin_port = htons(portno);
-      ip4addr_aton(dest_ip, ip_2_ip4(&dstaddr));
-      inet_addr_from_ip4addr(&(conn->serv_addr_ptr->sin_addr), ip_2_ip4(&dstaddr));
-      /*UNIX function interface*/
-      /*inet_pton(AF_INET, dest_ip, &(conn->serv_addr_ptr->sin_addr));*/
+      //ip4addr_aton(dest_ip, ip_2_ip4(&dstaddr));
+      //inet_addr_from_ip4addr(&(conn->serv_addr_ptr->sin_addr), ip_2_ip4(&dstaddr));
+      inet_pton(AF_INET, dest_ip, &(conn->serv_addr_ptr->sin_addr));
       #elif IPV6_TASK/*IPV4_TASK*/
       conn->serv_addr_ptr = (struct sockaddr_in6*)malloc(sizeof(struct sockaddr_in6));
       conn->serv_addr_ptr->sin6_family = AF_INET6;
       conn->serv_addr_ptr->sin6_port = htons(portno);
-      ip6addr_aton(dest_ip, ip_2_ip6(&dstaddr));
-      inet6_addr_from_ip6addr(&(conn->serv_addr_ptr->sin6_addr), ip_2_ip6(&dstaddr));
-      /*UNIX function interface*/
-      /*inet_pton(AF_INET6, dest_ip, &(conn->serv_addr_ptr->sin6_addr));*/
+      //ip6addr_aton(dest_ip, ip_2_ip6(&dstaddr));
+      //inet6_addr_from_ip6addr(&(conn->serv_addr_ptr->sin6_addr), ip_2_ip6(&dstaddr));
+      inet_pton(AF_INET6, dest_ip, &(conn->serv_addr_ptr->sin6_addr));
       #endif/*IPV4_TASK*/ 
    }
    return conn; 
