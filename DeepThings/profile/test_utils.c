@@ -1,5 +1,64 @@
 #include "test_utils.h"
 
+void load_image_by_number_local_data(image* img, uint32_t id){
+   int32_t h = img->h;
+   int32_t w = img->w;
+   char filename[256];
+   sprintf(filename, "data/input/%d.jpg", id);
+   image im = load_image_color(filename, 0, 0);
+   image sized = letterbox_image(im, w, h);
+   free_image(im);
+   img->data = sized.data;
+}
+
+image load_image_as_model_input_local_data(cnn_model* model, uint32_t id){
+   image sized;
+   sized.w = model->net->w; 
+   sized.h = model->net->h; 
+   sized.c = model->net->c;
+   load_image_by_number_local_data(&sized, id);
+   model->net->input = sized.data;
+   return sized;
+}
+
+void draw_object_boxes_local_data(cnn_model* model, uint32_t id){
+   network net = *(model->net);
+   image sized;
+   sized.w = net.w; sized.h = net.h; sized.c = net.c;
+   load_image_by_number_local_data(&sized, id);
+   image **alphabet = load_alphabet();
+   list *options = read_data_cfg((char*)"data/coco.data");
+   char *name_list = option_find_str(options, (char*)"names", (char*)"data/names.list");
+   char **names = get_labels(name_list);
+   char filename[256];
+   char outfile[256];
+   float thresh = .24;
+   float hier_thresh = .5;
+   float nms=.3;
+   sprintf(filename, "data/input/%d.jpg", id);
+   sprintf(outfile, "%d", id);
+   layer l = net.layers[net.n-1];
+   float **masks = 0;
+   if (l.coords > 4){
+      masks = (float **)calloc(l.w*l.h*l.n, sizeof(float*));
+      for(int j = 0; j < l.w*l.h*l.n; ++j) masks[j] = (float *)calloc(l.coords-4, sizeof(float *));
+   }
+   float **probs = (float **)calloc(l.w*l.h*l.n, sizeof(float *));
+   for(int j = 0; j < l.w*l.h*l.n; ++j) probs[j] = (float *)calloc(l.classes + 1, sizeof(float *));
+   image im = load_image_color(filename,0,0);
+   box *boxes = (box *)calloc(l.w*l.h*l.n, sizeof(box));
+   get_region_boxes(l, im.w, im.h, net.w, net.h, thresh, probs, boxes, masks, 0, 0, hier_thresh, 1);
+   if (nms) do_nms_sort(boxes, probs, l.w*l.h*l.n, l.classes, nms);
+   draw_detections(im, l.w*l.h*l.n, thresh, boxes, probs, masks, names, alphabet, l.classes);
+   save_image(im, outfile);
+   free(boxes);
+   free_ptrs((void **)probs, l.w*l.h*l.n);
+   if (l.coords > 4){
+      free_ptrs((void **)masks, l.w*l.h*l.n);
+   }
+   free_image(im);
+}
+
 void process_everything_in_gateway(void *arg){
    cnn_model* model = (cnn_model*)(((device_ctxt*)(arg))->model);
 #ifdef NNPACK
@@ -8,9 +67,9 @@ void process_everything_in_gateway(void *arg){
 #endif
    int32_t frame_num;
    for(frame_num = 0; frame_num < FRAME_NUM; frame_num ++){
-      image_holder img = load_image_as_model_input(model, frame_num);
+      image_holder img = load_image_as_model_input_local_data(model, frame_num);
       forward_all(model, 0);   
-      draw_object_boxes(model, frame_num);
+      draw_object_boxes_local_data(model, frame_num);
       free_image_holder(model, img);
    }
 #ifdef NNPACK
@@ -18,8 +77,6 @@ void process_everything_in_gateway(void *arg){
    nnp_deinitialize();
 #endif
 }
-
-
 
 void process_task_single_device(device_ctxt* edge_ctxt, device_ctxt* gateway_ctxt, blob* temp, bool is_reuse){
    printf("Task is: %d, frame number is %d\n", get_blob_task_id(temp), get_blob_frame_seq(temp));
@@ -59,7 +116,7 @@ void partition_frame_and_perform_inference_thread_single_device(device_ctxt* edg
 
       /*Load image and partition, fill task queues*/
       start_timer("load_image_as_model_input", frame_num, 0, 0);
-      load_image_as_model_input(model, frame_num);
+      load_image_as_model_input_local_data(model, frame_num);
       stop_timer("load_image_as_model_input", frame_num, 0, 0);
 
       start_timer("partition_and_enqueue", frame_num, 0, 0);
@@ -130,7 +187,7 @@ void partition_frame_and_perform_inference_thread_single_device_no_reuse(device_
 
       /*Load image and partition, fill task queues*/
       start_timer("load_image_as_model_input", frame_num, 0, 0);
-      load_image_as_model_input(model, frame_num);
+      load_image_as_model_input_local_data(model, frame_num);
       stop_timer("load_image_as_model_input", frame_num, 0, 0);
 
       start_timer("partition_and_enqueue", frame_num, 0, 0);
@@ -173,10 +230,10 @@ void deepthings_merge_result_thread_single_device(void *arg){
       printf("Client %d, frame sequence number %d, all partitions are merged in deepthings_merge_result_thread\n", cli_id, frame_seq);
 #endif
       float* fused_output = (float*)(temp->data);
-      image_holder img = load_image_as_model_input(model, get_blob_frame_seq(temp));
+      image_holder img = load_image_as_model_input_local_data(model, get_blob_frame_seq(temp));
       set_model_input(model, fused_output);
       forward_all(model, model->ftp_para->fused_layers);   
-      draw_object_boxes(model, get_blob_frame_seq(temp));
+      draw_object_boxes_local_data(model, get_blob_frame_seq(temp));
       free_image_holder(model, img);
       free_blob(temp);
 #if DEBUG_FLAG

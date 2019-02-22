@@ -77,4 +77,4 @@ clean_all:
 	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png *.prof 
 
 clean:
-	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png
+	rm -rf $(EXEC) $(EXECOBJ) *.log $(OBJDIR) *.png *.prof
