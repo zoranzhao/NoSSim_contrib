@@ -71,7 +71,7 @@ void generate_and_process_thread_no_gateway(void *arg);
 void steal_and_process_thread_no_gateway(void *arg);
 void test_stealer_client(uint32_t edge_id);
 void test_victim_client(uint32_t edge_id);
-
+void test_deepthings_gateway(uint32_t total_edge_number);
 
 
 #endif /*WORK_STEALING_RUNTIME_H*/

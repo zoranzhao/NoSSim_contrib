@@ -39,24 +39,12 @@ namespace inet {
 class INET_API CliWrapper : public cSimpleModule, public ILifecycle
 {
   protected:
-    enum Kinds { START = 100, NEXT };
 
     // send parameters
     long seqNum = 0;
-    cPar *reqLength = nullptr;
-    cPar *respLength = nullptr;
-    cPar *sendInterval = nullptr;
-
-    int localSAP = -1;
-    int remoteSAP = -1;
     int clientID = 0;
     MACAddress destMACAddress;
     NodeStatus *nodeStatus = nullptr;
-
-    // self messages
-    cMessage *timerMsg = nullptr;
-    simtime_t startTime;
-    simtime_t stopTime;
 
     // receive statistics
     long packetsSent = 0;
@@ -72,38 +60,28 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
   protected:
     virtual void initialize(int stage) override;
     virtual int numInitStages() const override { return NUM_INIT_STAGES; }
-    virtual void handleMessage(cMessage *msg) override;
-    virtual void finish() override;
-
+    virtual void startApp();
+    virtual void stopApp();
     virtual bool isNodeUp();
-    virtual bool isGenerator();
-    //virtual void scheduleNextPacket(bool start);
-    virtual void cancelNextPacket();
+    virtual void finish() override;
+    virtual void handleMessage(cMessage *msg) override;
+    virtual bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
 
-    virtual MACAddress resolveDestMACAddress();
 
+    virtual MACAddress resolveDestMACAddress(int dest_id);
     virtual void sendPacket(cMessage *msg);
     virtual void receivePacket(cPacket *msg);
-    virtual void registerDSAP(int dsap);
-    virtual bool handleOperationStage(LifecycleOperation *operation, int stage, IDoneCallback *doneCallback) override;
+
 
   public:
     artificial_example *System; 
 
-
-    CliWrapper() 
-    {
-        reqLength = NULL;
-        respLength = NULL;
-        sendInterval = NULL;
-        timerMsg = NULL;
-        nodeStatus = NULL;
-        //clientID = par("clientID");
+    CliWrapper(){
         System = new artificial_example ("mix_taskset_cli", TotalClients); 
         TotalClients++;
         System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
     }
-    virtual ~CliWrapper();
+    ~CliWrapper(){}
 };
 
 } // namespace inet

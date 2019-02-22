@@ -76,7 +76,7 @@ void SmartAP::handleMessage(cMessage *msg)
 			datapacket->setFileBuffer(ii, ((OmnetIf_pkt*)(msg->getContextPointer()))->getFileBuffer(ii));
 		}
 		sendAPPacket(datapacket);
-		//System -> NetworkInterfaceCard1->notify_sending();
+		System -> NetworkInterfaceCard1->notify_sending();
 		delete(msg);
 	} 
     }
@@ -99,8 +99,7 @@ void SmartAP::handleAndDispatchFrame(EtherFrame *frame)
     for(int ii=0; ii<buf_size; ii++){
 	image_buf[ii]=datapacket->getFileBuffer(ii);
     }
-    //System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
-
+    System -> NetworkInterfaceCard1->notify_receiving(image_buf, datapacket->getFileBufferArraySize());
     delete frame;
 }
 

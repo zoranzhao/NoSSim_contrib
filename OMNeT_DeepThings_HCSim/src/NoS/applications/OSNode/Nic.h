@@ -6,6 +6,8 @@
 #include "config.h"
 #include "OmnetIf_pkt.h"
 
+#include "netif/hcsim_if.h"
+
 using namespace omnetpp;
 #ifndef SC_NIC__H
 #define SC_NIC__H
@@ -39,9 +41,16 @@ class Nic : public sc_module {
 	  while (1) {
 		size_send = size_in -> read();
 		data_send = data_in -> read();
+
+		char* bufptr;
+                struct pbuf *p, *q;
+
+                //std::cout << "dest is" << get_dest_device_id(data_send, size_send) << std::endl;
+
 		cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
 		cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
 		OmnetIf_pkt* pkt = new OmnetIf_pkt();
+                pkt->DestNode = get_dest_device_id(data_send, size_send);
 		pkt->setFileBufferArraySize(size_send);
 		for(int ii=0; ii<size_send; ii++){
 			pkt->setFileBuffer(ii, ((char*)data_send)[ii]);
@@ -68,7 +77,6 @@ class Nic : public sc_module {
 	void notify_receiving(char* fileBuffer, unsigned int size){  
         	data_recv = fileBuffer;
 		size_recv = size;
-                //if(NodeID==0) std::cout << "Pkt recieved, size is: " << size << " time is:" << sc_core::sc_time_stamp().to_seconds() << "\n"; 
 		recvd.notify(); 
 	}
 

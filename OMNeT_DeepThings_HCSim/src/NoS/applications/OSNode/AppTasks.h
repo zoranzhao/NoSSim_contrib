@@ -67,7 +67,14 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	IP_ADDR4(&((lwip_context* )g_ctxt)->netmask, 255,255,255,0);
 
         int client_id[MAX_EDGE_NUM] = {9, 8, 4, 14, 15, 16};
-	IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192,168,4, client_id[node_id]);
+        char* client_addr[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
+        if(node_id == 6){ 
+           //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, 1);
+           ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->ipaddr);
+ 	}else {
+           //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, client_id[node_id]);
+           ipaddr_aton(client_addr[node_id], &((lwip_context* )g_ctxt)->ipaddr);
+        }
 
 #elif IPV6_TASK//IPV4_TASK
 	IP_ADDR6(&((lwip_context* )g_ctxt)->ipaddr,  1, 2, 3, (4 + node_id));
@@ -102,11 +109,17 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	printf("TCP/IP initialized.\n");
 	//sys_thread_new("send_with_sock", send_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 0);
 	//sys_thread_new("recv_with_sock", recv_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 1);
-        //if(node_id==0) test_victim_client(node_id);
-        //if(node_id==1) test_stealer_client(node_id);
         if(node_id==0) test_deepthings_victim_edge(node_id);
-        if(node_id==1) test_deepthings_stealer_edge(node_id);
+        if(node_id==1) test_deepthings_victim_edge(node_id);
         if(node_id==2) test_deepthings_stealer_edge(node_id);
+        if(node_id==3) test_deepthings_stealer_edge(node_id);
+        if(node_id==4) test_deepthings_stealer_edge(node_id);
+        if(node_id==5) test_deepthings_stealer_edge(node_id);
+
+
+        //Gateway ID
+        if(node_id==6) test_deepthings_gateway(node_id);
+        //if(node_id==6) test_deepthings_stealer_edge(node_id);
 
         //if(node_id==0) test_socket_server(node_id);
         //if(node_id==1) test_socket_client(node_id);
