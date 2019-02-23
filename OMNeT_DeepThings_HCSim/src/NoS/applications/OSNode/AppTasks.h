@@ -110,7 +110,7 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	//sys_thread_new("send_with_sock", send_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 0);
 	//sys_thread_new("recv_with_sock", recv_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 1);
         if(node_id==0) test_deepthings_victim_edge(node_id);
-        if(node_id==1) test_deepthings_victim_edge(node_id);
+        if(node_id==1) test_deepthings_stealer_edge(node_id);
         if(node_id==2) test_deepthings_stealer_edge(node_id);
         if(node_id==3) test_deepthings_stealer_edge(node_id);
         if(node_id==4) test_deepthings_stealer_edge(node_id);

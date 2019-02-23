@@ -78,7 +78,7 @@ void CliWrapper::handleMessage(cMessage *msg)
          destMACAddress = resolveDestMACAddress(((OmnetIf_pkt*)(msg->getContextPointer()))->DestNode);
          if (destMACAddress.isUnspecified())
             return;
-         sendPacket(datapacket); 
+         sendPacket(datapacket, ((OmnetIf_pkt*)(msg->getContextPointer()))->DestNode); 
          System -> NetworkInterfaceCard1->notify_sending();		
          delete msg; 
       } 
@@ -114,33 +114,41 @@ MACAddress CliWrapper::resolveDestMACAddress(int dest_id)
     AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
     MACAddress AP;
     MACAddress Dest;
-    AP.tryParse("10:00:00:00:00:00");
-    if(dest_id==0){
-       Dest.tryParse("01:00:00:00:00:00");
-       return Dest;
+    AP.tryParse("00:10:00:00:00:00");
+    if(dest_id!=255) {
+       total_sent_pkts[dest_id]++;
+    }else{
+       for(int i = 0; i < 7; i++){
+          if(i == System->NodeID) continue;
+          total_sent_pkts[i]++;
+       }
     }
-    if(dest_id==1){
+    if(dest_id==0){
        Dest.tryParse("00:01:00:00:00:00");
        return Dest;
     }
+    if(dest_id==1){
+       Dest.tryParse("00:02:00:00:00:00");
+       return Dest;
+    }
     if(dest_id==2){
-       Dest.tryParse("00:00:01:00:00:00");
+       Dest.tryParse("00:03:00:00:00:00");
        return Dest;
     }
     if(dest_id==3){
-       Dest.tryParse("00:00:00:01:00:00");
+       Dest.tryParse("00:04:00:00:00:00");
        return Dest;
     }
     if(dest_id==4){
-       Dest.tryParse("00:00:00:00:01:00");
+       Dest.tryParse("00:05:00:00:00:00");
        return Dest;
     }
     if(dest_id==5){
-       Dest.tryParse("00:00:00:00:00:10");
+       Dest.tryParse("00:06:00:00:00:00");
        return Dest;
     }
     if(dest_id==6){
-       Dest.tryParse("00:00:00:00:00:01");
+       Dest.tryParse("00:07:00:00:00:00");
        return Dest;
     }
     if(dest_id==255)
@@ -150,7 +158,7 @@ MACAddress CliWrapper::resolveDestMACAddress(int dest_id)
 
 }
 
-void CliWrapper::sendPacket(cMessage *msg)
+void CliWrapper::sendPacket(cMessage *msg, int dest_node)
 {
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(msg);
     seqNum++;
@@ -158,7 +166,7 @@ void CliWrapper::sendPacket(cMessage *msg)
     char msgname[30];
     sprintf(msgname, "req-%d-%ld", getId(), seqNum);
     EV << "Generating packet `" << msgname << "'\n";
-
+    //std::cout << "Sender is " << System->NodeID << "Dest Node ID is " << dest_node << ", Dest destMACAddress is " << destMACAddress << ", Packet name is: " << msgname << std::endl;
     datapacket->setName(msgname);   
     datapacket->setRequestId(seqNum);
 
@@ -174,7 +182,9 @@ void CliWrapper::sendPacket(cMessage *msg)
 
 void CliWrapper::receivePacket(cPacket *msg)
 {
+
     EtherWrapperResp *datapacket = check_and_cast<EtherWrapperResp *>(msg);
+    //std::cout << "Receive Node ID is " << System->NodeID << "Packet name is: " << datapacket->getName() << std::endl;
     int buf_size = datapacket->getFileBufferArraySize();
     char* buf = (char*) malloc(buf_size);
     for(int ii=0; ii<buf_size; ii++){
@@ -182,6 +192,7 @@ void CliWrapper::receivePacket(cPacket *msg)
     }
     System -> NetworkInterfaceCard1->notify_receiving(buf, datapacket->getFileBufferArraySize());
     packetsReceived++;
+    total_recvd_pkts[System->NodeID]++;
     emit(rcvdPkSignal, msg);
     delete msg;
 }
@@ -189,6 +200,12 @@ void CliWrapper::receivePacket(cPacket *msg)
 void CliWrapper::finish()
 {
     std::cout<<System->NodeID<<"	"<<std::endl;
+    if(System->NodeID == 0){
+        for(int i = 0; i < 7; i++){
+           std::cout <<" In Node "<< i <<", recvd: " <<total_recvd_pkts[i] <<", sent: " << total_sent_pkts[i] << std::endl;
+        }
+    }
+
 }
 
 } // namespace inet

@@ -42,9 +42,6 @@ class Nic : public sc_module {
 		size_send = size_in -> read();
 		data_send = data_in -> read();
 
-		char* bufptr;
-                struct pbuf *p, *q;
-
                 //std::cout << "dest is" << get_dest_device_id(data_send, size_send) << std::endl;
 
 		cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);

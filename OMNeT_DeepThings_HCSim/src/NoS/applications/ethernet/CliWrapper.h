@@ -30,6 +30,8 @@
 using namespace ::sc_core;
 
 extern int TotalClients;
+extern long total_sent_pkts[10];
+extern long total_recvd_pkts[10];
 
 namespace inet {
 
@@ -42,7 +44,7 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
 
     // send parameters
     long seqNum = 0;
-    int clientID = 0;
+    int clientID = 1;
     MACAddress destMACAddress;
     NodeStatus *nodeStatus = nullptr;
 
@@ -69,7 +71,7 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
 
 
     virtual MACAddress resolveDestMACAddress(int dest_id);
-    virtual void sendPacket(cMessage *msg);
+    virtual void sendPacket(cMessage *msg, int dest_id);
     virtual void receivePacket(cPacket *msg);
 
 
@@ -77,6 +79,10 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
     artificial_example *System; 
 
     CliWrapper(){
+        for(int i = 0; i < 10; i++){      
+          total_sent_pkts[i] = 0;
+          total_recvd_pkts[i] = 0;
+        }
         System = new artificial_example ("mix_taskset_cli", TotalClients); 
         TotalClients++;
         System -> NetworkInterfaceCard1 -> OmnetWrapper = this;
@@ -87,4 +93,5 @@ class INET_API CliWrapper : public cSimpleModule, public ILifecycle
 } // namespace inet
 
 #endif // ifndef __INET_CLIWRAPPER_H
+
 
