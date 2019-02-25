@@ -1,9 +1,11 @@
+HCSIM=1
 OPENMP=1
 NNPACK=0
 ARM_NEON=0
 DEBUG=1
 DARKNET=./darknet-nnpack
-DISTRIOT=./DistrIoT
+#DistrIoT ported with lwIP/HCSim
+DISTRIOT=./port/hcsim_lwip
 DEEPTHINGS=./DeepThings
 
 VPATH=$(DEEPTHINGS)/src:./src
@@ -21,6 +23,16 @@ LDFLAGS= -lm -pthread
 CFLAGS=-Wall -fPIC
 COMMON=-I$(DEEPTHINGS)/include/ -I$(DEEPTHINGS)/src/ -I$(DISTRIOT)/include/ -I$(DISTRIOT)/src/ -I$(DARKNET)/include/ -I$(DARKNET)/src/ -Iinclude/ -Isrc/ 
 LDLIB=-L$(DISTRIOT) -l:$(DISTRIOTLIB) -L$(DARKNET) -l:$(DARKNETLIB)
+
+ifeq ($(HCSIM), 1)
+LWIP=../../lwip-hcsim
+COMMON+=-I$(DISTRIOT)/lwip -I$(DISTRIOT)/hcsim -I$(LWIP)/src/include -I$(LWIP)/ports/hcsim -I$(LWIP)/ports/hcsim/context -I$(LWIP)/ports/port/include
+SYSTEMC_LIB=/home/slam/OMNET/systemc-2.3.1/lib-linux64
+SYSTEMC=/home/slam/OMNET/systemc-2.3.1
+HCSIM_DIR=/home/slam/OMNET/HCSim
+LDFLAGS+=-L$(SYSTEMC_LIB) -lsystemc -L$(HCSIM_DIR)/lib -lhcsim -Wl,-rpath,$(SYSTEMC_LIB)
+COMMON+=-DSC_INCLUDE_DYNAMIC_PROCESSES -I$(SYSTEMC)/include -I$(HCSIM_DIR)/include
+endif
 
 ifeq ($(OPENMP), 1) 
 CFLAGS+= -fopenmp
@@ -51,7 +63,7 @@ LIBOBJ = $(addprefix $(OBJDIR), $(LIBOBJS))
 
 DEPS = $(wildcard */*.h) Makefile
 
-all: obj $(EXEC) $(SLIB) $(ALIB) 
+all: obj $(SLIB) $(ALIB) 
 
 $(ALIB): $(LIBOBJ)
 	$(AR) $(ARFLAGS) $@ $^
