@@ -31,6 +31,8 @@ class artificial_example
 	,size_send_fifo2(5000)
 	,data_recv_fifo2(5000)
     	,size_recv_fifo2(5000)
+    	,control_fifo1(5000)
+    	,control_fifo2(5000)
     {
 
         MainBus_HINT.init(CON_INTR_NUM);
@@ -39,8 +41,11 @@ class artificial_example
         
 	//MainBus -> ID  = NodeID;
         CPU = new MCProcessor<CON_INTR_NUM ,CON_CPU_NUM> ("DualCore_CPU", HCSim::OS_INFINIT_VAL, NodeID);
+        CPU->ctrl_out1(control_fifo1);
+        CPU->ctrl_out2(control_fifo2);
         CPU->MainBus_tlm_master_port(*MainBus);
         CPU->MainBus_tlm_slave_port(*MainBus);
+
         for (int intr = 0; intr < CON_INTR_NUM ; intr++)
             CPU->HINTR_tlm[intr](MainBus_HINT[intr]);
         
@@ -58,6 +63,9 @@ class artificial_example
 
 	NetworkInterfaceCard1 =  new Nic("nic1", NodeID); 
 	NetworkInterfaceCard2 =  new Nic("nic2", NodeID); 
+
+        NetworkInterfaceCard1 -> ctrl_in(control_fifo1);
+        NetworkInterfaceCard2 -> ctrl_in(control_fifo2);
 
 	intr_gen_1 -> size_out(size_send_fifo1); 
 	NetworkInterfaceCard1 -> size_in(size_send_fifo1); 
@@ -119,7 +127,8 @@ class artificial_example
     sc_fifo<char* > data_recv_fifo2;
     sc_fifo<int > size_recv_fifo2;
 
-
+    sc_fifo<int > control_fifo1;
+    sc_fifo<int > control_fifo2;
     // Channels 
     sc_core::sc_vector< HCSim::handshake_ch  > MainBus_HINT;
     //HCSim::handshake_ch MainBus_HINT[CON_INTR_NUM];

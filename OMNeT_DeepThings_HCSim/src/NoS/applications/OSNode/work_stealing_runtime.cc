@@ -200,7 +200,7 @@ void* test_deepthings_result_gateway(void* srv_conn, void* arg){
 
 void test_deepthings_collect_result_thread(void *arg){
    const char* request_types[]={"result_gateway"};
-   void* (*handlers[])(void*, void*) = {test_deepthings_result_gateway};
+   void* (*handlers[])(void*, void*) = {deepthings_result_gateway};
    int result_service = service_init(RESULT_COLLECT_PORT, TCP);
    start_service(result_service, TCP, request_types, 1, handlers, arg);
    close_service(result_service);
@@ -209,10 +209,12 @@ void test_deepthings_collect_result_thread(void *arg){
 void test_deepthings_merge_result_thread(void *arg){
    cnn_model* model = (cnn_model*)(((device_ctxt*)(arg))->model);
    blob* temp;
-   int32_t cli_id;
-   int32_t frame_seq;
+   int32_t cli_id = 0;
+   int32_t frame_seq = 0;
    while(1){
       temp = dequeue_and_merge((device_ctxt*)arg);
+      printf("dequeue_and_merge, Client %d, frame sequence number %d, all partitions are merged in deepthings_merge_result_thread at time %f\n", 
+             cli_id, frame_seq,  sc_core::sc_time_stamp().to_seconds());
       cli_id = get_blob_cli_id(temp);
       frame_seq = get_blob_frame_seq(temp);
       printf("Client %d, frame sequence number %d, all partitions are merged in deepthings_merge_result_thread at time %f\n", 
@@ -225,7 +227,12 @@ void test_deepthings_merge_result_thread(void *arg){
       free_image_holder(model, img);
       free_blob(temp);
       printf("Client %d, frame sequence number %d, finish processing at time %f\n", cli_id, frame_seq, sc_core::sc_time_stamp().to_seconds());
+      if(frame_seq == 0) {
+         os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
+         os_model -> ctrl_out1->write(0);
+      }
    }
+   
 }
 
 void test_deepthings_gateway(uint32_t total_edge_number){
@@ -237,7 +244,7 @@ void test_deepthings_gateway(uint32_t total_edge_number){
    char weights[30] = "models/yolo.weights";
 
    device_ctxt* ctxt = deepthings_gateway_init(N, M, fused_layers, network, weights, total_edge_number, addr_list);
-   sys_thread_t t1 = sys_thread_new("deepthings_collect_result_thread", test_deepthings_collect_result_thread, ctxt, 101, 0);
+   sys_thread_t t1 = sys_thread_new("deepthings_collect_result_thread", deepthings_collect_result_thread, ctxt, 101, 0);
    sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread", test_deepthings_merge_result_thread, ctxt, 101, 0);
    sys_thread_t t3 = sys_thread_new("deepthings_work_stealing_thread", deepthings_work_stealing_thread, ctxt, 101, 0);
    //sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, ctxt, 101, 0);

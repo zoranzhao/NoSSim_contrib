@@ -81,7 +81,10 @@ void CliWrapper::handleMessage(cMessage *msg)
          sendPacket(datapacket, ((OmnetIf_pkt*)(msg->getContextPointer()))->DestNode); 
          System -> NetworkInterfaceCard1->notify_sending();		
          delete msg; 
-      } 
+      }
+      else if (strcmp(msg->getName(), "StopSimulation") == 0){
+         endSimulation();
+      }
    }
    else
       receivePacket(check_and_cast<cPacket *>(msg));

@@ -13,6 +13,7 @@ using namespace omnetpp;
 #define SC_NIC__H
 
 class Nic : public sc_module {
+	bool stop_flag;
    public:
 	int syn_flag;
    	sc_core::sc_event syn_cond; 
@@ -28,22 +29,25 @@ class Nic : public sc_module {
 	sc_port< sc_fifo_in_if<int> > size_in;
 	sc_port< sc_fifo_out_if<char*> > data_out;
 	sc_port< sc_fifo_in_if<char*> > data_in;
+        
+        sc_port< sc_fifo_in_if<int> > ctrl_in;
+
 	SC_HAS_PROCESS(Nic);
 
 	Nic(sc_module_name name, int NodeID) : sc_module(name){
 		syn_flag = 0;
+                stop_flag = false;
 		this -> NodeID = NodeID;
 		SC_THREAD(NicRecv);
 		SC_THREAD(NicSend);
+		SC_THREAD(NicCtrl);
 	}
 	void NicSend()
 	{
 	  while (1) {
 		size_send = size_in -> read();
 		data_send = data_in -> read();
-
                 //std::cout << "dest is" << get_dest_device_id(data_send, size_send) << std::endl;
-
 		cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
 		cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
 		OmnetIf_pkt* pkt = new OmnetIf_pkt();
@@ -57,15 +61,25 @@ class Nic : public sc_module {
 		startMsg->setContextPointer(pkt);
 		wrapper->scheduleAt(simTime(), startMsg);  //Notify immediately
 		wait(this->sent);
+                if(stop_flag){
+		   cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
+		   cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
+		   cMessage *startMsg = new cMessage("StopSimulation");
+		   wrapper->scheduleAt(simTime(), startMsg);  //Notify immediately
+                }
 	  }
 	}
 	void NicRecv(){
-		while (1) {
-			sc_core::wait(recvd);
-			size_out -> write(size_recv);
-			data_out -> write(data_recv);
-	    	}   
+            while (1) {
+               sc_core::wait(recvd);
+               size_out -> write(size_recv);
+               data_out -> write(data_recv);
+            }   
 	}
+        void NicCtrl(){
+	     ctrl_in -> read();
+             stop_flag = true;
+        }
 
 	void notify_sending(){  
 		sent.notify(); 

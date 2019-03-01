@@ -25,6 +25,8 @@ void tcpip_init_done(void *arg);
 class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_INIT 
 {
  public:
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out1; 
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out2; 
 
     sc_core::sc_vector< sc_core::sc_port< sys_call_recv_if > > recv_port;
     sc_core::sc_vector< sc_core::sc_port< sys_call_send_if > > send_port;
@@ -53,6 +55,8 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
         OSmodel = new os_model_context();
 	OSmodel->node_id = node_id;
 	OSmodel->os_port(this->os_port);
+	OSmodel->ctrl_out1(ctrl_out1);
+	OSmodel->ctrl_out2(ctrl_out2);
 	OSmodel->recv_port[0](this->recv_port[0]);
 	OSmodel->recv_port[1](this->recv_port[1]);
 	OSmodel->send_port[0](this->send_port[0]);

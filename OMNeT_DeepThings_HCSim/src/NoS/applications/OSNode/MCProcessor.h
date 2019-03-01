@@ -194,6 +194,11 @@ class MCProcessor_OS
 {
  public:
     /*---------------------------------------------------------
+       Port for controling simulation progress
+     ----------------------------------------------------------*/
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out1; 
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out2; 
+    /*---------------------------------------------------------
        OS/HAL interface
        >> MAC LINK/MEM Master Interface
      ----------------------------------------------------------*/  
@@ -316,7 +321,8 @@ MCProcessor_OS< INTR_NUM, CPU_NUM >::MCProcessor_OS(const sc_core::sc_module_nam
                               const_task_period_INTH[0], const_task_priority_INTH[0], 
 				const_id_INT[0], const_init_core_INT[0], const_end_time, NodeID);
 
-
+    CPU_APP->ctrl_out1(ctrl_out1);
+    CPU_APP->ctrl_out2(ctrl_out2);
     CPU_APP->os_port(*OS);
     CPU_APP->recv_port[0](*recv_adapter1);
     CPU_APP->send_port[0](*send_adapter1);
@@ -517,6 +523,11 @@ class MCProcessor_HAL
     ,virtual public HCSim::HAL_if
 {
  public:
+    /*---------------------------------------------------------
+       Port for controling simulation progress
+     ----------------------------------------------------------*/
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out1; 
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out2; 
       /*---------------------------------------------------------
        HAL/HW interface
        >> MAC TLM PROT Master Interface
@@ -570,9 +581,11 @@ MCProcessor_HAL< INTR_NUM, CPU_NUM >::MCProcessor_HAL(const sc_core::sc_module_n
     
   	hal_export(*this);
   	
-  	std::stringstream module_name;
+    std::stringstream module_name;
     module_name << name << "_OS";
-	CPU_OS = new MCProcessor_OS< INTR_NUM, CPU_NUM >(module_name.str().c_str(), simulation_quantum, NodeID);
+    CPU_OS = new MCProcessor_OS< INTR_NUM, CPU_NUM >(module_name.str().c_str(), simulation_quantum, NodeID);
+    CPU_OS->ctrl_out1(ctrl_out1);
+    CPU_OS->ctrl_out2(ctrl_out2);
     for (int cpu = 0; cpu < CPU_NUM; cpu++) {
     	CPU_OS->mac_link_port[cpu](mac_link2tlm[cpu]);
     	CPU_OS->mac_mem_port[cpu](mac_mem2tlm[cpu]);
@@ -665,6 +678,11 @@ class MCProcessor_HW
 {
  public:
     /*---------------------------------------------------------
+       Port for controling simulation progress
+     ----------------------------------------------------------*/
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out1; 
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out2; 
+    /*---------------------------------------------------------
        HW/TLM interface
        >> MAC TLM PROT Master Interface
      ----------------------------------------------------------*/
@@ -708,6 +726,8 @@ MCProcessor_HW< INTR_NUM, CPU_NUM >::MCProcessor_HW(const sc_core::sc_module_nam
   	std::stringstream module_name;
     module_name << name << "_HAL";    
     CPU_HAL = new MCProcessor_HAL< INTR_NUM, CPU_NUM >(module_name.str().c_str(), simulation_quantum, NodeID);
+    CPU_HAL->ctrl_out1(ctrl_out1);
+    CPU_HAL->ctrl_out2(ctrl_out2);
     for (int cpu = 0; cpu < CPU_NUM; cpu++)   
        CPU_HAL->bus_master_port[cpu](bus_master_port[cpu]);
      
@@ -741,6 +761,11 @@ class MCProcessor
 {
  public:
     /*---------------------------------------------------------
+       Port for controling simulation progress
+     ----------------------------------------------------------*/
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out1; 
+    sc_core::sc_port< sc_core::sc_fifo_out_if<int> > ctrl_out2; 
+    /*---------------------------------------------------------
        Hardware interface
        >> MAC TLM PROT Master/Slave Interface
      ----------------------------------------------------------*/
@@ -767,17 +792,17 @@ class MCProcessor
     /*---------------------------------------------------------
        Interrupt Controller
      ----------------------------------------------------------*/ 
-     HCSim::GenericIntrController< INTR_NUM, CPU_NUM >* GIC;
+   HCSim::GenericIntrController< INTR_NUM, CPU_NUM >* GIC;
     /*---------------------------------------------------------
        CPU HW LAYER
      ----------------------------------------------------------*/ 
-    MCProcessor_HW< INTR_NUM, CPU_NUM >* CPU_HW;
+   MCProcessor_HW< INTR_NUM, CPU_NUM >* CPU_HW;
     /*---------------------------------------------------------
        Internal communication channels
        >> Master port wrapper / nIRQ signals
      ----------------------------------------------------------*/    
-    HCSim::AmbaAhbMacTlm_MasterTLM_Wrap master_port_wrapper;
-    sc_core::sc_vector< sc_core::sc_signal< bool > > nIRQ;
+   HCSim::AmbaAhbMacTlm_MasterTLM_Wrap master_port_wrapper;
+   sc_core::sc_vector< sc_core::sc_signal< bool > > nIRQ;
     //sc_core::sc_signal< bool > nIRQ[CPU_NUM];
 };
 
@@ -787,27 +812,27 @@ MCProcessor< INTR_NUM, CPU_NUM >::MCProcessor(const sc_core::sc_module_name name
    :sc_core::sc_module(name)
    ,master_port_wrapper("tlm_master_port_wrapper")
 {
-    HINTR_tlm.init(INTR_NUM);
-    nIRQ.init(CPU_NUM);
-    GIC = new HCSim::GenericIntrController<INTR_NUM, CPU_NUM> (sc_core::sc_gen_unique_name("GIC")) ;
-    GIC->bus_slave_port(MainBus_tlm_slave_port);
-    for (int intr = 0; intr < INTR_NUM; intr++) 
-        GIC->HINT_tlm[intr](HINTR_tlm[intr]);   
-    for (int cpu = 0; cpu < CPU_NUM; cpu++)      
-        GIC->nIRQ[cpu](nIRQ[cpu]);
-    /* Set interrupt target CPU IDs */
-    GIC->setIntrTargetCPU(1, 0);
-    GIC->setIntrTargetCPU(2, 1);    
-     	
-  	std::stringstream module_name;
-    module_name << name << "_HW";
-  	CPU_HW = new MCProcessor_HW< INTR_NUM, CPU_NUM >(module_name.str().c_str(), simulation_quantum, NodeID);
-  	for (int cpu = 0; cpu < CPU_NUM; cpu++) {
+   HINTR_tlm.init(INTR_NUM);
+   nIRQ.init(CPU_NUM);
+   GIC = new HCSim::GenericIntrController<INTR_NUM, CPU_NUM> (sc_core::sc_gen_unique_name("GIC")) ;
+   GIC->bus_slave_port(MainBus_tlm_slave_port);
+   for (int intr = 0; intr < INTR_NUM; intr++) 
+      GIC->HINT_tlm[intr](HINTR_tlm[intr]);   
+   for (int cpu = 0; cpu < CPU_NUM; cpu++)      
+      GIC->nIRQ[cpu](nIRQ[cpu]);
+   /* Set interrupt target CPU IDs */
+   GIC->setIntrTargetCPU(1, 0);
+   GIC->setIntrTargetCPU(2, 1);    
+   std::stringstream module_name;
+   module_name << name << "_HW";
+   CPU_HW = new MCProcessor_HW< INTR_NUM, CPU_NUM >(module_name.str().c_str(), simulation_quantum, NodeID);
+   CPU_HW->ctrl_out1(ctrl_out1);
+   CPU_HW->ctrl_out2(ctrl_out2);
+   for (int cpu = 0; cpu < CPU_NUM; cpu++) {
         CPU_HW->bus_master_port[cpu](master_port_wrapper);
         CPU_HW->nIRQ[cpu](nIRQ[cpu]);
-    }  
-    
-    master_port_wrapper.tlm_port(MainBus_tlm_master_port);
+   }  
+   master_port_wrapper.tlm_port(MainBus_tlm_master_port);
 }
 
 template< int INTR_NUM, int CPU_NUM >
