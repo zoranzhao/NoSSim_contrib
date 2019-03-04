@@ -7,7 +7,7 @@
 #include "app_utils.h"
 //#include "service_api.h"
 #include "work_stealing_runtime.h"
-//#include "test_cases.h"
+#include "json_config.h"
 
 #ifndef SC_TASK_MODEL__H
 #define SC_TASK_MODEL__H
@@ -61,29 +61,28 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	OSmodel->recv_port[1](this->recv_port[1]);
 	OSmodel->send_port[0](this->send_port[0]);
 	OSmodel->send_port[1](this->send_port[1]);	
+	OSmodel->profile->load_profile("./profile/1_core/5x5_grid_16_layers_1_core.prof");
     }
     
     ~IntrDriven_Task() {}
 
     void OSTaskCreate(void){
 #if IPV4_TASK
-	IP_ADDR4(&((lwip_context* )g_ctxt)->gw, 192,168,4,1);
-	IP_ADDR4(&((lwip_context* )g_ctxt)->netmask, 255,255,255,0);
-
-        int client_id[MAX_EDGE_NUM] = {9, 8, 4, 14, 15, 16};
-        char* client_addr[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
+	//IP_ADDR4(&((lwip_context* )g_ctxt)->gw, 192,168,4,1);
+	//IP_ADDR4(&((lwip_context* )g_ctxt)->netmask, 255,255,255,0);
+        ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->gw);
+        ipaddr_aton("255.255.255.0", &((lwip_context* )g_ctxt)->netmask);
         if(node_id == 6){ 
            //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, 1);
            ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->ipaddr);
  	}else {
            //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, client_id[node_id]);
-           ipaddr_aton(client_addr[node_id], &((lwip_context* )g_ctxt)->ipaddr);
+           ipaddr_aton(addr_list[node_id], &((lwip_context* )g_ctxt)->ipaddr);
         }
 
 #elif IPV6_TASK//IPV4_TASK
 	IP_ADDR6(&((lwip_context* )g_ctxt)->ipaddr,  1, 2, 3, (4 + node_id));
 #endif//IPV4_TASK
-	printf("Setting up node_id %d ...\n", node_id);
 	((lwip_context* )g_ctxt)->node_id = node_id;
         os_task_id = os_port->taskCreate(sc_core::sc_gen_unique_name("intrdriven_task"), 
                                 HCSim::OS_RT_APERIODIC, priority, period, exe_cost, 
@@ -115,10 +114,10 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	//sys_thread_new("recv_with_sock", recv_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 1);
         if(node_id==0) test_deepthings_victim_edge(node_id);
         if(node_id==1) test_deepthings_stealer_edge(node_id);
-        //if(node_id==2) test_deepthings_stealer_edge(node_id);
-        //if(node_id==3) test_deepthings_stealer_edge(node_id);
-        //if(node_id==4) test_deepthings_stealer_edge(node_id);
-        //if(node_id==5) test_deepthings_stealer_edge(node_id);
+        if(node_id==2) test_deepthings_stealer_edge(node_id);
+        if(node_id==3) test_deepthings_stealer_edge(node_id);
+        if(node_id==4) test_deepthings_stealer_edge(node_id);
+        if(node_id==5) test_deepthings_stealer_edge(node_id);
 
 
         //Gateway ID

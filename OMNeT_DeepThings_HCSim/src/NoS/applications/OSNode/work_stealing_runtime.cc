@@ -131,9 +131,9 @@ void steal_partition_and_perform_inference_thread_no_reuse(void *arg){
 }
 
 void test_deepthings_stealer_edge(uint32_t edge_id){
-   uint32_t N = 3;
-   uint32_t M = 3;
-   uint32_t fused_layers = 8;
+   uint32_t N = 5;
+   uint32_t M = 5;
+   uint32_t fused_layers = 16;
 
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
@@ -142,16 +142,16 @@ void test_deepthings_stealer_edge(uint32_t edge_id){
 
    sys_thread_t t1 = sys_thread_new("steal_partition_and_perform_inference_thread", 
                                     steal_partition_and_perform_inference_thread, ctxt, 101, 0);
-   sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, ctxt, 101, 0);
+   sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, ctxt, 102, 0);
 
    //sys_thread_join(t1);
    //sys_thread_join(t2);
 }
 
 void test_deepthings_victim_edge(uint32_t edge_id){//edge_id == 0;
-   uint32_t N = 3;
-   uint32_t M = 3;
-   uint32_t fused_layers = 8;
+   uint32_t N = 5;
+   uint32_t M = 5;
+   uint32_t fused_layers = 16;
 
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
@@ -227,7 +227,7 @@ void test_deepthings_merge_result_thread(void *arg){
       free_image_holder(model, img);
       free_blob(temp);
       printf("Client %d, frame sequence number %d, finish processing at time %f\n", cli_id, frame_seq, sc_core::sc_time_stamp().to_seconds());
-      if(frame_seq == 0) {
+      if(frame_seq == 3) {
          os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
          os_model -> ctrl_out1->write(0);
       }
@@ -236,16 +236,16 @@ void test_deepthings_merge_result_thread(void *arg){
 }
 
 void test_deepthings_gateway(uint32_t total_edge_number){
-   uint32_t N = 3;
-   uint32_t M = 3;
-   uint32_t fused_layers = 8;
+   uint32_t N = 5;
+   uint32_t M = 5;
+   uint32_t fused_layers = 16;
 
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
 
    device_ctxt* ctxt = deepthings_gateway_init(N, M, fused_layers, network, weights, total_edge_number, addr_list);
-   sys_thread_t t1 = sys_thread_new("deepthings_collect_result_thread", deepthings_collect_result_thread, ctxt, 101, 0);
-   sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread", test_deepthings_merge_result_thread, ctxt, 101, 0);
+   sys_thread_t t1 = sys_thread_new("deepthings_collect_result_thread", deepthings_collect_result_thread, ctxt, 102, 0);
+   sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread", test_deepthings_merge_result_thread, ctxt, 102, 0);
    sys_thread_t t3 = sys_thread_new("deepthings_work_stealing_thread", deepthings_work_stealing_thread, ctxt, 101, 0);
    //sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, ctxt, 101, 0);
 
