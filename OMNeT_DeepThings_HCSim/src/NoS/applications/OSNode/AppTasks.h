@@ -62,6 +62,7 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	OSmodel->send_port[0](this->send_port[0]);
 	OSmodel->send_port[1](this->send_port[1]);	
 	OSmodel->profile->load_profile("./profile/1_core/5x5_grid_16_layers_1_core.prof");
+	OSmodel->profile->load_profile("./profile/1_core/lwip_1_core.prof");
     }
     
     ~IntrDriven_Task() {}
@@ -109,15 +110,15 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
         sim_ctxt.register_task(OSmodel, app_ctxt, os_task_id, sc_core::sc_get_current_process_handle());
 	tcpip_init(tcpip_init_done, g_ctxt);
 	printf("Applications started, node_id is %d %d\n", ((lwip_context* )g_ctxt)->node_id, sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
-	printf("TCP/IP initialized.\n");
+	printf("TCP/IP initialized at time %f\n", sc_core::sc_time_stamp().to_seconds());
 	//sys_thread_new("send_with_sock", send_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 0);
 	//sys_thread_new("recv_with_sock", recv_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 1);
         if(node_id==0) test_deepthings_victim_edge(node_id);
-        if(node_id==1) test_deepthings_stealer_edge(node_id);
-        if(node_id==2) test_deepthings_stealer_edge(node_id);
-        if(node_id==3) test_deepthings_stealer_edge(node_id);
-        if(node_id==4) test_deepthings_stealer_edge(node_id);
-        if(node_id==5) test_deepthings_stealer_edge(node_id);
+        //if(node_id==1) test_deepthings_stealer_edge(node_id);
+        //if(node_id==2) test_deepthings_stealer_edge(node_id);
+        //if(node_id==3) test_deepthings_stealer_edge(node_id);
+        //if(node_id==4) test_deepthings_stealer_edge(node_id);
+        //if(node_id==5) test_deepthings_stealer_edge(node_id);
 
 
         //Gateway ID
