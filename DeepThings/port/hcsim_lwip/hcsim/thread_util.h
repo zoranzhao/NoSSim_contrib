@@ -23,6 +23,7 @@ void sys_sem_free(struct sys_sem **sem);
 void sys_sleep(uint32_t milliseconds);
 uint32_t sys_now(void);
 double sys_now_in_sec(void);
+void sys_time_wait(char* function_name, char* input);
 #ifdef __cplusplus
 }
 #endif
