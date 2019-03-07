@@ -83,6 +83,7 @@ void CliWrapper::handleMessage(cMessage *msg)
          delete msg; 
       }
       else if (strcmp(msg->getName(), "StopSimulation") == 0){
+         delete msg; 
          endSimulation();
       }
    }
