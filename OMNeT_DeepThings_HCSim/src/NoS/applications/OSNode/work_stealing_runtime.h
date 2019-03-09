@@ -1,9 +1,11 @@
+#ifndef WORK_STEALING_RUNTIME_H
+#define WORK_STEALING_RUNTIME_H
+
 #include "darkiot.h"
 #include "configure.h"
 #include <string.h>
 #include "test_utils.h"
-#ifndef WORK_STEALING_RUNTIME_H
-#define WORK_STEALING_RUNTIME_H
+#include "json_config.h"
 
 #ifndef BATCH_SIZE
 #define BATCH_SIZE 8
@@ -60,8 +62,8 @@ void all_in_one_device_test(void* arg){
 
 void partition_frame_and_perform_inference_thread_no_reuse_no_gateway(void *arg);
 void steal_partition_and_perform_inference_thread_no_reuse_no_gateway(void *arg);
-void test_deepthings_stealer_edge(uint32_t edge_id);
-void test_deepthings_victim_edge(uint32_t edge_id);
+void test_deepthings_stealer_edge(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t edge_id);
+void test_deepthings_victim_edge(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t edge_id);
 
 
 /*------------------------------------------------------*/
@@ -71,7 +73,7 @@ void generate_and_process_thread_no_gateway(void *arg);
 void steal_and_process_thread_no_gateway(void *arg);
 void test_stealer_client(uint32_t edge_id);
 void test_victim_client(uint32_t edge_id);
-void test_deepthings_gateway(uint32_t total_edge_number);
+void test_deepthings_gateway(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t total_edge_number);
 
 
 #endif /*WORK_STEALING_RUNTIME_H*/

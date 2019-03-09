@@ -8,6 +8,7 @@ Edge device linklayer wrapper is implemented based on EtherAppCli.cc from INET
 #include <math.h>
 
 #include "CliWrapper.h"
+#include "json_config.h"
 
 #include "inet/linklayer/common/Ieee802Ctrl.h"
 #include "inet/common/lifecycle/NodeOperations.h"
@@ -114,19 +115,23 @@ bool CliWrapper::handleOperationStage(LifecycleOperation *operation, int stage, 
 
 MACAddress CliWrapper::resolveDestMACAddress(int dest_id)
 {
-    MACAddress AddrAll;
-    AddrAll.tryParse("ff:ff:ff:ff:ff:ff");
-    MACAddress AP;
-    MACAddress Dest;
-    AP.tryParse("00:10:00:00:00:00");
-    if(dest_id!=255) {
+
+    //std::cout <<"NodeID:"<< System->NodeID << ", resolveDestMACAddress:" << dest_id << std::endl;
+    MACAddress dest_mac_addr;
+    char* dest = (simulation_config.cluster)->get_mac_address_from_device_id(dest_id);
+    assert(dest != NULL);
+    dest_mac_addr.tryParse(dest);
+    if(dest_id!=BROAD_CAST_MAC_ADDR) {
        total_sent_pkts[dest_id]++;
     }else{
-       for(int i = 0; i < 7; i++){
+       for(int i : (simulation_config.cluster)->edge_id){
           if(i == System->NodeID) continue;
           total_sent_pkts[i]++;
        }
     }
+    return  dest_mac_addr;
+/*
+
     if(dest_id==0){
        Dest.tryParse("00:01:00:00:00:00");
        return Dest;
@@ -159,7 +164,7 @@ MACAddress CliWrapper::resolveDestMACAddress(int dest_id)
        return  AddrAll;
 
     return  AddrAll;
-
+*/
 }
 
 void CliWrapper::sendPacket(cMessage *msg, int dest_node)

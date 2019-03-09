@@ -130,11 +130,7 @@ void steal_partition_and_perform_inference_thread_no_reuse(void *arg){
    }
 }
 
-void test_deepthings_stealer_edge(uint32_t edge_id){
-   uint32_t N = 5;
-   uint32_t M = 5;
-   uint32_t fused_layers = 16;
-
+void test_deepthings_stealer_edge(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t edge_id){
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
 
@@ -144,15 +140,11 @@ void test_deepthings_stealer_edge(uint32_t edge_id){
                                     steal_partition_and_perform_inference_thread, ctxt, 101, 0);
    sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, ctxt, 102, 0);
 
-   //sys_thread_join(t1);
-   //sys_thread_join(t2);
+   sys_thread_join(t1);
+   sys_thread_join(t2);
 }
 
-void test_deepthings_victim_edge(uint32_t edge_id){//edge_id == 0;
-   uint32_t N = 5;
-   uint32_t M = 5;
-   uint32_t fused_layers = 16;
-
+void test_deepthings_victim_edge(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t edge_id){//edge_id == 0;
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
    //Load configuration here
@@ -163,9 +155,9 @@ void test_deepthings_victim_edge(uint32_t edge_id){//edge_id == 0;
    sys_thread_t t2 = sys_thread_new("send_result_thread", send_result_thread, ctxt, 101, 0);
    sys_thread_t t3 = sys_thread_new("deepthings_serve_stealing_thread", deepthings_serve_stealing_thread, ctxt, 101, 0);
 
-   //sys_thread_join(t1);
-   //sys_thread_join(t2);
-   //sys_thread_join(t3);
+   sys_thread_join(t1);
+   sys_thread_join(t2);
+   sys_thread_join(t3);
 }
 
 void* test_deepthings_result_gateway(void* srv_conn, void* arg){
@@ -235,11 +227,7 @@ void test_deepthings_merge_result_thread(void *arg){
    
 }
 
-void test_deepthings_gateway(uint32_t total_edge_number){
-   uint32_t N = 5;
-   uint32_t M = 5;
-   uint32_t fused_layers = 16;
-
+void test_deepthings_gateway(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t total_edge_number){
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
 
@@ -247,10 +235,10 @@ void test_deepthings_gateway(uint32_t total_edge_number){
    sys_thread_t t1 = sys_thread_new("deepthings_collect_result_thread", deepthings_collect_result_thread, ctxt, 102, 0);
    sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread", test_deepthings_merge_result_thread, ctxt, 102, 0);
    sys_thread_t t3 = sys_thread_new("deepthings_work_stealing_thread", deepthings_work_stealing_thread, ctxt, 101, 0);
-   //sys_thread_t t3 = sys_thread_new("work_stealing_thread", work_stealing_thread, ctxt, 101, 0);
 
-   //sys_thread_join(t1);
-   //sys_thread_join(t2);
+   sys_thread_join(t1);
+   sys_thread_join(t2);
+   sys_thread_join(t3);
 
 }
 

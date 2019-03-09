@@ -17,6 +17,8 @@
 #include <mutex>
 #include <unordered_map>
 
+#include "os_ctxt.h"
+
 using namespace rapidjson;
 
 class deepthings_config {
@@ -83,34 +85,24 @@ public:
 class sim_config {
    int device_id;
    std::mutex unique_id_mutex;
-   int edge_total_number;
-   std::vector<std::string> edge_ipv4_addr;
-   std::vector<std::string> edge_ipv6_addr;
-   std::vector<std::string> edge_mac_addr;
-   std::vector<std::string> idle_device_list;
-
 //Application specific configuration
-   deepthings_config* deepthings_para;
-
-
 public:
+   deepthings_config* deepthings_para;
+   cluster_config* cluster;
    sim_config(){
       device_id = 0; 
       deepthings_para = new deepthings_config("app_config.json");
+      cluster = new cluster_config();
+      sim_ctxt.cluster = cluster; //The cluster address table should also be included in the simulation context
       load_config_json("sim_config.json");
    }
    ~sim_config(){
       delete deepthings_para;
-   }
-   int get_client_number(){
-      return edge_total_number;
+      delete cluster;
    }
    int generate_unique_edge_id(){
       std::lock_guard<std::mutex> guard(unique_id_mutex);
       return device_id++;
-   }
-   int get_gateway_id(){
-      return edge_total_number;
    }
    void load_config_json(std::string filename){
       std::ifstream ifs(filename);
@@ -124,62 +116,85 @@ public:
       std::cout << "======================================================================================" << std::endl;     
       Value& item = d["edge"]["total_number"];
       assert(item.IsInt());
-      std::cout << "total_number: " << item.GetInt() << std::endl;
+      cluster->total_number = item.GetInt();
 
-      item = d["edge"]["ipv4_address"];
+      item = d["edge"]["edge_id"];
       assert(item.IsArray());
       for (SizeType i = 0; i < item.Size(); i++) {
-         assert(item[i].IsString());
-         std::cout << "IPv4 address is: " << item[i].GetString() << std::endl;
+         assert(item[i].IsInt());
+         (cluster->edge_id).push_back(item[i].GetInt());
+         //std::cout << "IPv4 address is: " << item[i].GetString() << std::endl;
       }
 
-      item = d["edge"]["ipv6_address"];
+      item = d["edge"]["edge_type"];
       assert(item.IsArray());
       for (SizeType i = 0; i < item.Size(); i++) {
          assert(item[i].IsString());
-         std::cout << "IPv6 address is: " << item[i].GetString() << std::endl;
+         (cluster->edge_type)[(cluster->edge_id)[i]] = item[i].GetString();
+         //std::cout << "IPv4 address is: " << item[i].GetString() << std::endl;
       }
 
-      item = d["edge"]["mac_address"];
+      item = d["edge"]["edge_core_number"];
+      assert(item.IsArray());
+      for (SizeType i = 0; i < item.Size(); i++) {
+         assert(item[i].IsInt());
+         assert(item.Size() == (cluster->edge_id).size());
+         (cluster->edge_core_number)[(cluster->edge_id)[i]] = item[i].GetInt();
+         //std::cout << "IPv4 address is: " << item[i].GetString() << std::endl;
+      }
+
+      item = d["edge"]["edge_ipv4_address"];
       assert(item.IsArray());
       for (SizeType i = 0; i < item.Size(); i++) {
          assert(item[i].IsString());
-         std::cout << "MAC address is: " << item[i].GetString() << std::endl;
-         edge_mac_addr.push_back(item[i].GetString());
+         (cluster->edge_ipv4_address)[(cluster->edge_id)[i]] = item[i].GetString();
+         //std::cout << "IPv4 address is: " << item[i].GetString() << std::endl;
+      }
+
+      item = d["edge"]["edge_ipv6_address"];
+      assert(item.IsArray());
+      for (SizeType i = 0; i < item.Size(); i++) {
+         assert(item[i].IsString());
+         (cluster->edge_ipv6_address)[(cluster->edge_id)[i]] = item[i].GetString();
+      }
+
+      item = d["edge"]["edge_mac_address"];
+      assert(item.IsArray());
+      for (SizeType i = 0; i < item.Size(); i++) {
+         assert(item[i].IsString());
+         (cluster->edge_mac_address)[(cluster->edge_id)[i]] = item[i].GetString();
+         (cluster->edge_mac_address_to_id)[item[i].GetString()] = (cluster->edge_id)[i];
       }   
-      for(std::string& it : edge_mac_addr){
-         std::cout << "MAC address is: " << it << std::endl;
-      }
- 
-   //Parsing parameter for gateway device
-      item = d["gateway"]["total_number"];
-      assert(item.IsInt());
-      std::cout << "total_number: " << item.GetInt() << std::endl;
 
+ 
+      //Parsing parameter for gateway device
       item = d["gateway"]["gateway_id"];
       assert(item.IsInt());
-      std::cout << "gateway_id: " << item.GetInt() << std::endl;
+      cluster->gateway_id = item.GetInt();
+      //std::cout << "gateway_id: " << std::endl;
+      item = d["gateway"]["gateway_core_number"];
+      assert(item.IsInt());
+      cluster->gateway_core_number = item.GetInt();
 
-      item = d["gateway"]["ipv4_address"];
+      item = d["gateway"]["gateway_ipv4_address"];
       assert(item.IsString());
-      std::cout << "ipv4_address: " << item.GetString() << std::endl;
+      cluster->gateway_ipv4_address = item.GetString();
 
-      item = d["gateway"]["ipv6_address"];
+      item = d["gateway"]["gateway_ipv6_address"];
       assert(item.IsString());
-      std::cout << "ipv6_address: " << item.GetString() << std::endl;
+      cluster->gateway_ipv6_address = item.GetString();
 
-      item = d["gateway"]["mac_address"];
+      item = d["gateway"]["gateway_mac_address"];
       assert(item.IsString());
-      std::cout << "mac_address: " << item.GetString() << std::endl;
+      cluster->gateway_mac_address = item.GetString();
+
+      item = d["ap_mac_address"];
+      assert(item.IsString());
+      cluster->ap_mac_address = item.GetString();
       std::cout << "======================================================================================" << std::endl;   
 
+      cluster->print();
    }
-/*
-   void load_config_json(char* filename){
-   }
-   char* get_gateway_ip(){
-   }   
-*/
 };
 extern sim_config simulation_config;
 #endif //JSON_CONFIG_H

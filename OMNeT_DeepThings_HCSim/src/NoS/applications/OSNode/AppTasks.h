@@ -61,8 +61,6 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	OSmodel->recv_port[1](this->recv_port[1]);
 	OSmodel->send_port[0](this->send_port[0]);
 	OSmodel->send_port[1](this->send_port[1]);	
-	OSmodel->profile->load_profile("./profile/1_core/5x5_grid_16_layers_1_core.prof");
-	OSmodel->profile->load_profile("./profile/1_core/lwip_1_core.prof");
     }
     
     ~IntrDriven_Task() {}
@@ -73,7 +71,7 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	//IP_ADDR4(&((lwip_context* )g_ctxt)->netmask, 255,255,255,0);
         ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->gw);
         ipaddr_aton("255.255.255.0", &((lwip_context* )g_ctxt)->netmask);
-        if(node_id == 6){ 
+        if(node_id == (sim_ctxt.cluster)->gateway_id){ 
            //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, 1);
            ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->ipaddr);
  	}else {
@@ -111,22 +109,29 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 	tcpip_init(tcpip_init_done, g_ctxt);
 	printf("Applications started, node_id is %d %d\n", ((lwip_context* )g_ctxt)->node_id, sim_ctxt.get_task_id(sc_core::sc_get_current_process_handle()));
 	printf("TCP/IP initialized at time %f\n", sc_core::sc_time_stamp().to_seconds());
+
 	//sys_thread_new("send_with_sock", send_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 0);
 	//sys_thread_new("recv_with_sock", recv_task, ((lwip_context* )g_ctxt), DEFAULT_THREAD_STACKSIZE, 1);
-        if(node_id==0) test_deepthings_victim_edge(node_id);
-        //if(node_id==1) test_deepthings_stealer_edge(node_id);
-        //if(node_id==2) test_deepthings_stealer_edge(node_id);
-        //if(node_id==3) test_deepthings_stealer_edge(node_id);
-        //if(node_id==4) test_deepthings_stealer_edge(node_id);
-        //if(node_id==5) test_deepthings_stealer_edge(node_id);
-
-
-        //Gateway ID
-        if(node_id==6) test_deepthings_gateway(node_id);
-        //if(node_id==6) test_deepthings_stealer_edge(node_id);
-
         //if(node_id==0) test_socket_server(node_id);
         //if(node_id==1) test_socket_client(node_id);
+
+        std::cout << "N is:" << (simulation_config.deepthings_para)->getN() << std::endl;
+        std::cout << "M is:" << (simulation_config.deepthings_para)->getM() << std::endl;
+        std::cout << "Fused layers is:" << (simulation_config.deepthings_para)->getFusedLayers() << std::endl;
+        std::cout << "Core number is:" << (simulation_config.cluster)->edge_core_number[node_id] << std::endl;
+        
+        int N = (simulation_config.deepthings_para)->getN();
+        int M = (simulation_config.deepthings_para)->getM();
+        int layers = (simulation_config.deepthings_para)->getFusedLayers();
+        int cores =  (simulation_config.cluster)->edge_core_number[node_id];
+	OSmodel->profile->load_profile("./profile/" + std::to_string(cores) + "_core/" + 
+                                        std::to_string(N) + "x" + std::to_string(M) + "_grid_" + std::to_string(layers) + "_layers_" + std::to_string(cores) + "_core.prof");
+	OSmodel->profile->load_profile("./profile/1_core/lwip_1_core.prof");
+
+        if(node_id == (simulation_config.cluster)->gateway_id) test_deepthings_gateway(N, M, layers, node_id);
+        else if((simulation_config.cluster)->edge_type[node_id] == "stealer") test_deepthings_stealer_edge(N, M, layers, node_id);
+        else if((simulation_config.cluster)->edge_type[node_id] == "victim") test_deepthings_victim_edge(N, M, layers, node_id);
+        else std::cout << "Nothing is running in device!" << std::endl;
         os_port->taskTerminate(os_task_id);
     }
 };
