@@ -89,16 +89,25 @@ class sim_config {
 public:
    deepthings_config* deepthings_para;
    cluster_config* cluster;
+   int data_source;
+   sim_results* result;
    sim_config(){
       device_id = 0; 
+      data_source = 0;
+
       deepthings_para = new deepthings_config("app_config.json");
+
       cluster = new cluster_config();
       sim_ctxt.cluster = cluster; //The cluster address table should also be included in the simulation context
       load_config_json("sim_config.json");
+
+      result = new sim_results(cluster->total_number);
+      sim_ctxt.result = result; //The result table should also be included in the simulation context
    }
    ~sim_config(){
       delete deepthings_para;
       delete cluster;
+      delete result;
    }
    int generate_unique_edge_id(){
       std::lock_guard<std::mutex> guard(unique_id_mutex);
@@ -131,7 +140,8 @@ public:
       for (SizeType i = 0; i < item.Size(); i++) {
          assert(item[i].IsString());
          (cluster->edge_type)[(cluster->edge_id)[i]] = item[i].GetString();
-         //std::cout << "IPv4 address is: " << item[i].GetString() << std::endl;
+         std::cout << "Device type is: " << item[i].GetString() << std::endl;
+         if(std::string("victim") == std::string(item[i].GetString())) data_source++;
       }
 
       item = d["edge"]["edge_core_number"];
@@ -195,6 +205,43 @@ public:
 
       cluster->print();
    }
+
+   void write_result_json(std::string filename){
+      Document document; 
+      document.SetObject();
+      Document::AllocatorType& allocator = document.GetAllocator();
+      for(int node_id = 0; node_id < cluster->total_number; node_id ++){
+         Value object(kObjectType);
+         std::unordered_map<std::string, double> edge = result->get_edge_result(node_id);
+         for ( auto it = edge.begin(); it != edge.end(); ++it ){
+            Value metric_name((it->first).c_str(), (it->first).size(), allocator); 
+            object.AddMember(metric_name, it->second, allocator);
+         }
+
+         Value key(std::string("edge_" + std::to_string(node_id) ).c_str(), std::string("edge_" + std::to_string(node_id) ).size(), allocator); 
+         document.AddMember(key, object, allocator);
+      }
+
+      Value object(kObjectType);
+      std::unordered_map<std::string, double> gateway = result->get_gateway_result();
+      for ( auto it = gateway.begin(); it != gateway.end(); ++it ){
+            Value metric_name((it->first).c_str(), (it->first).size(), allocator); 
+            object.AddMember(metric_name, it->second, allocator);
+      }
+      Value key("gateway");
+      document.AddMember(key, object, allocator);
+
+      StringBuffer sb;
+      PrettyWriter<StringBuffer> writer(sb);
+      document.Accept(writer);    // Accept() traverses the DOM and generates Handler events.
+      puts(sb.GetString());
+
+      std::string json (sb.GetString(), sb.GetSize());
+      std::ofstream ofs(filename);
+      ofs << json;
+   }   
+
+
 };
 extern sim_config simulation_config;
 #endif //JSON_CONFIG_H

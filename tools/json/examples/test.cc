@@ -6,6 +6,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
+#include "rapidjson/ostreamwrapper.h"
 
 #include <iostream>
 #include <fstream>
@@ -74,6 +75,49 @@ int main(){
    item = d["gateway"]["mac_address"];
    assert(item.IsString());
    cout << "mac_address: " << item.GetString() << endl;
+
+
+
+
+
+
+
+
+
+
+
+   Document document;
+   document.SetObject();
+
+   Value array(kArrayType);
+   Document::AllocatorType& allocator = document.GetAllocator();
+ 
+   array.PushBack("hello", allocator).PushBack("world", allocator);//"array":["hello","world"]
+ 
+   document.AddMember("Name", "XYZ", allocator);
+   document.AddMember("Rollnumer", 2, allocator);
+   document.AddMember("array", array, allocator);
+ 
+
+   Value object(kObjectType);
+
+   object.AddMember("Math", 54.22, allocator);
+   object.AddMember("Science", "70", allocator);
+   object.AddMember("English", "50", allocator);
+   object.AddMember("Social Science", "70", allocator);
+   Value key(StringRef(string("edge_" + std::to_string(1) ).c_str()));
+   document.AddMember(key, object, allocator);
+
+
+   StringBuffer sb;
+   PrettyWriter<StringBuffer> writer(sb);
+   document.Accept(writer);    // Accept() traverses the DOM and generates Handler events.
+   puts(sb.GetString());
+
+   std::string json (sb.GetString(), sb.GetSize());
+   std::ofstream ofs(std::string("result_" + std::to_string(1) + ".json"));
+   ofs << json;
+
 
    return 0;
 

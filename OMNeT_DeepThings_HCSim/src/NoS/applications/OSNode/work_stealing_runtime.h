@@ -11,7 +11,6 @@
 #define BATCH_SIZE 8
 #endif
 
-extern const char* addr_list[MAX_EDGE_NUM];
 /*
 void test_gateway(uint32_t total_number){
    device_ctxt* ctxt = init_gateway(total_number, addr_list);

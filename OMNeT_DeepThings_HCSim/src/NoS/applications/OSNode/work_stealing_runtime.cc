@@ -1,9 +1,10 @@
 #include "work_stealing_runtime.h"
-#if IPV4_TASK
-const char* addr_list[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
-#elif IPV6_TASK/*IPV4_TASK*/
-const char* addr_list[MAX_EDGE_NUM] = {"100:0:200:0:300:0:400:", "100:0:200:0:300:0:500:", "100:0:200:0:300:0:600:", "100:0:200:0:300:0:700:", "100:0:200:0:300:0:800:", "100:0:200:0:300:0:900:"};
-#endif/*IPV4_TASK*/   
+
+//#if IPV4_TASK
+//char* addr_list[MAX_EDGE_NUM] = EDGE_ADDR_LIST;
+//#elif IPV6_TASK/*IPV4_TASK*/
+//char* addr_list[MAX_EDGE_NUM] = {"100:0:200:0:300:0:400:", "100:0:200:0:300:0:500:", "100:0:200:0:300:0:600:", "100:0:200:0:300:0:700:", "100:0:200:0:300:0:800:", "100:0:200:0:300:0:900:"};
+//#endif/*IPV4_TASK*/   
 
 void partition_frame_and_perform_inference_thread_no_reuse_no_gateway(void *arg){
    device_ctxt* ctxt = (device_ctxt*)arg;
@@ -64,12 +65,8 @@ void steal_partition_and_perform_inference_thread_no_reuse_no_gateway(void *arg)
    service_conn* conn;
    blob* temp;
    while(1){
-      conn = connect_service(TCP, (const char *)addr_list[0], WORK_STEAL_PORT);
-      //conn = connect_service(TCP, "192.168.4.1", WORK_STEAL_PORT);
-      //int flags =1;
-      //lwip_setsockopt(conn->sockfd, IPPROTO_TCP, TCP_NODELAY, (void *)&flags, sizeof(flags));
+      conn = connect_service(TCP, "192.168.4.9", WORK_STEAL_PORT);
       send_request("steal_client", 20, conn);
-      //printf("Stealing request sent, time is %f\n", sc_core::sc_time_stamp().to_seconds());
       temp = recv_data(conn);
       close_service_connection(conn);
       if(temp->id == -1){
@@ -203,6 +200,7 @@ void test_deepthings_merge_result_thread(void *arg){
    blob* temp;
    int32_t cli_id = 0;
    int32_t frame_seq = 0;
+   int32_t total_frames = 0;
    while(1){
       temp = dequeue_and_merge((device_ctxt*)arg);
       printf("dequeue_and_merge, Client %d, frame sequence number %d, all partitions are merged in deepthings_merge_result_thread at time %f\n", 
@@ -211,6 +209,8 @@ void test_deepthings_merge_result_thread(void *arg){
       frame_seq = get_blob_frame_seq(temp);
       printf("Client %d, frame sequence number %d, all partitions are merged in deepthings_merge_result_thread at time %f\n", 
              cli_id, frame_seq,  sc_core::sc_time_stamp().to_seconds());
+      (simulation_config.result)->set_edge_result(cli_id, "latency" ,sc_core::sc_time_stamp().to_seconds()/(frame_seq+1));
+
       float* fused_output = (float*)(temp->data);
       image_holder img = load_image_as_model_input(model, get_blob_frame_seq(temp));
       set_model_input(model, fused_output);
@@ -219,7 +219,8 @@ void test_deepthings_merge_result_thread(void *arg){
       free_image_holder(model, img);
       free_blob(temp);
       printf("Client %d, frame sequence number %d, finish processing at time %f\n", cli_id, frame_seq, sc_core::sc_time_stamp().to_seconds());
-      if(frame_seq == 3) {
+      total_frames++;
+      if(total_frames == ((simulation_config.data_source)*FRAME_NUM)){
          os_model_context* os_model = sim_ctxt.get_os_ctxt( sc_core::sc_get_current_process_handle() );
          os_model -> ctrl_out1->write(0);
       }
@@ -230,8 +231,19 @@ void test_deepthings_merge_result_thread(void *arg){
 void test_deepthings_gateway(uint32_t N, uint32_t M, uint32_t fused_layers, uint32_t total_edge_number){
    char network[30] = "models/yolo.cfg";
    char weights[30] = "models/yolo.weights";
+   char* addr_list[MAX_EDGE_NUM];
 
-   device_ctxt* ctxt = deepthings_gateway_init(N, M, fused_layers, network, weights, total_edge_number, addr_list);
+   for(int edge_num = 0; edge_num < (simulation_config.cluster)->total_number; edge_num++){
+      #if IPV4_TASK
+      std::string ipv_address = (simulation_config.cluster)->edge_ipv4_address[edge_num];
+      #elif IPV6_TASK/*IPV4_TASK*/
+      std::string ipv_address = (simulation_config.cluster)->edge_ipv6_address[edge_num];
+      #endif/*IPV4_TASK*/   
+      addr_list[edge_num] = new char[ipv_address.length() + 1];
+      strcpy(addr_list[edge_num], ipv_address.c_str());
+   }
+
+   device_ctxt* ctxt = deepthings_gateway_init(N, M, fused_layers, network, weights, total_edge_number, (const char **)addr_list);
    sys_thread_t t1 = sys_thread_new("deepthings_collect_result_thread", deepthings_collect_result_thread, ctxt, 102, 0);
    sys_thread_t t2 = sys_thread_new("deepthings_merge_result_thread", test_deepthings_merge_result_thread, ctxt, 102, 0);
    sys_thread_t t3 = sys_thread_new("deepthings_work_stealing_thread", deepthings_work_stealing_thread, ctxt, 101, 0);
@@ -239,6 +251,10 @@ void test_deepthings_gateway(uint32_t N, uint32_t M, uint32_t fused_layers, uint
    sys_thread_join(t1);
    sys_thread_join(t2);
    sys_thread_join(t3);
+
+   for(int edge_num = 0; edge_num < (simulation_config.cluster)->total_number; edge_num++){
+      delete [] addr_list[edge_num];
+   }
 
 }
 

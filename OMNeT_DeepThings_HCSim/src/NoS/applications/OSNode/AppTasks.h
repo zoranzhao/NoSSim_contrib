@@ -69,14 +69,16 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
 #if IPV4_TASK
 	//IP_ADDR4(&((lwip_context* )g_ctxt)->gw, 192,168,4,1);
 	//IP_ADDR4(&((lwip_context* )g_ctxt)->netmask, 255,255,255,0);
-        ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->gw);
+        ipaddr_aton((simulation_config.cluster)->gateway_ipv4_address.c_str(), &((lwip_context* )g_ctxt)->gw);
         ipaddr_aton("255.255.255.0", &((lwip_context* )g_ctxt)->netmask);
         if(node_id == (sim_ctxt.cluster)->gateway_id){ 
            //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, 1);
-           ipaddr_aton("192.168.4.1", &((lwip_context* )g_ctxt)->ipaddr);
+           ipaddr_aton((simulation_config.cluster)->gateway_ipv4_address.c_str(), &((lwip_context* )g_ctxt)->ipaddr);
+           printf("IP address is: %s\n", ipaddr_ntoa(&((lwip_context* )g_ctxt)->ipaddr));
  	}else {
            //IP_ADDR4(&((lwip_context* )g_ctxt)->ipaddr, 192, 168, 4, client_id[node_id]);
-           ipaddr_aton(addr_list[node_id], &((lwip_context* )g_ctxt)->ipaddr);
+           ipaddr_aton((simulation_config.cluster)->edge_ipv4_address[node_id].c_str(), &((lwip_context* )g_ctxt)->ipaddr);
+           printf("IP address is: %s\n", ipaddr_ntoa(&((lwip_context* )g_ctxt)->ipaddr));
         }
 
 #elif IPV6_TASK//IPV4_TASK

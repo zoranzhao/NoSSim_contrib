@@ -149,16 +149,47 @@ def omnetpp_ini():
                     f_out.write("**.numAntennas = 4" + os.linesep)
 
 if __name__ == "__main__":
-    deepthings_config(
-                       total_number = 1, 
-                       data_source_number = 1,
-                       N = 4,
-                       M = 4,
-                       FusedLayers = 16,
+    
+    ftp=[3, 4, 5]
+    cluster_size = [1, 2, 3, 4, 5, 6]   
+    layers = 16
+#Fix data source
+    data_source = 1
+    for n in ftp:  
+       for edge_number in cluster_size: 
+          m = n
+          print "Generating results of: "+ str(n) + "x" + str(m) + "_" + str(layers) + "/"+str(data_source)+"_data_src_"+str(edge_number)+"_edge.json"
+          deepthings_config(
+                       total_number = edge_number, 
+                       data_source_number = data_source,
+                       N = n,
+                       M = m,
+                       FusedLayers = layers,
                       )
-    omnetpp_ini()
-    call(["make","test"])
-    print "Simulation is finished"
+          omnetpp_ini()
+          call(["make","test"])
+          print "Simulation is finished"
+          call(["cp","src/result.json", "results/"+ str(n) + "x" + str(m) + "_" + str(layers) + "/"+str(data_source)+"_data_src_"+str(edge_number)+"_edge.json"])
+
+    
+#Fix edge_number
+    edge_number = 6
+    for n in ftp:   
+       for data_source in cluster_size:
+
+          m = n
+          print "Generating results of: "+ str(n) + "x" + str(m) + "_" + str(layers) + "/"+str(data_source)+"_data_src_"+str(edge_number)+"_edge.json"
+          deepthings_config(
+                       total_number = edge_number, 
+                       data_source_number = data_source,
+                       N = n,
+                       M = m,
+                       FusedLayers = layers,
+                      )
+          omnetpp_ini()
+          call(["make","test"])
+          print "Simulation is finished"
+          call(["cp","src/result.json", "results/"+ str(n) + "x" + str(m) + "_" + str(layers) + "/"+str(data_source)+"_data_src_"+str(edge_number)+"_edge.json"])
 
 
 

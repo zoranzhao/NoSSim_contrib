@@ -213,7 +213,9 @@ void CliWrapper::finish()
         for(int i = 0; i < 7; i++){
            std::cout <<" In Node "<< i <<", recvd: " <<total_recvd_pkts[i] <<", sent: " << total_sent_pkts[i] << std::endl;
         }
+        simulation_config.write_result_json("result.json");
     }
+
 
 }
 
