@@ -87,7 +87,11 @@ class NicDriver
      	while (1) {
 			size = size_in->read();
 			data = data_in->read();
-
+			if(size==6 && strcmp(data, "Stop!")==0){
+			   size_out->write(size);
+			   data_out->write(data);	
+			   break;
+                        }
 	    		MainBus_HINT->send(); // send an interrupt
 	    		Port_tlm->slaveWrite(addr+1, &size, sizeof(int) );
 	    		MainBus_HINT->send(); // send an interrupt

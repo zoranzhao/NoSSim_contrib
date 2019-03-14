@@ -1,10 +1,14 @@
+#OS model
 OS_MODEL=/home/slam/OMNET/HCSim
+#lwIP stack
 LWIP=/home/slam/OMNET/lwip-hcsim
 LWIP_LIB=/home/slam/OMNET/lwip-hcsim/ports
+#Simulation contexts
 HELPER=/home/slam/OMNET/lwip-hcsim/ports/hcsim/context
 JSONPARSER=../../tools/json
-
+#IoT Runtime library
 DISTRIOT=/home/slam/OMNET/NoSSim_contrib/DeepThings/port/hcsim_lwip
+#Application
 DEEPTHINGS=/home/slam/OMNET/NoSSim_contrib/DeepThings/DeepThings
 DEEPTHINGS_LIB=/home/slam/OMNET/NoSSim_contrib/DeepThings
 DEEPTHINGS_TEST=/home/slam/OMNET/NoSSim_contrib/DeepThings
@@ -73,7 +77,7 @@ checkmakefiles:
 
 test:
 	export NEDPATH=$$NEDPATH:.:$(INET_DIR)/src && \
-	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini #-u Cmdenv
+	  cd src && ./$(MODEL_EXE)  -f omnetpp.ini -u Cmdenv
 
 # generate an include file that contains all the WITH_FEATURE macros according to the current enablement of features
 src/$(PKG_NAME)/features.h: $(wildcard .oppfeaturestate) .oppfeatures

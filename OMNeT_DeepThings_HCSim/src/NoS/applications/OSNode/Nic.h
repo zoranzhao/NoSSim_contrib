@@ -20,6 +20,7 @@ class Nic : public sc_module {
 	int NodeID;
    	sc_core::sc_event recvd; 
    	sc_core::sc_event sent; 
+   	sc_core::sc_event stop; 
 	char* data_send;
 	int size_send;
 	char* data_recv;
@@ -47,6 +48,14 @@ class Nic : public sc_module {
 	  while (1) {
 		size_send = size_in -> read();
 		data_send = data_in -> read();
+                if(size_send==6 && strcmp(data_send, "Stop!")==0){
+		   cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
+		   cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
+		   cMessage *startMsg = new cMessage("StopSimulation");
+		   wrapper->scheduleAt(simTime(), startMsg);  //Notify immediately
+                   break;	
+                }
+
                 //std::cout << "dest is" << get_dest_device_id(data_send, size_send) << std::endl;
 		cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
 		cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
@@ -60,7 +69,9 @@ class Nic : public sc_module {
 		cMessage *startMsg = new cMessage("ServerToCli");
 		startMsg->setContextPointer(pkt);
 		wrapper->scheduleAt(simTime(), startMsg);  //Notify immediately
-		wait(this->sent);
+                if(!stop_flag){
+		   wait(this->sent | this->stop);
+                }
                 if(stop_flag){
 		   cSimpleModule* wrapper = (cSimpleModule*)(OmnetWrapper);
 		   cContextSwitcher dummy1(wrapper); //VERY IMPORTANT
@@ -79,6 +90,11 @@ class Nic : public sc_module {
         void NicCtrl(){
 	     ctrl_in -> read();
              stop_flag = true;
+	     stop.notify(); 
+             size_out -> write(6);
+             char* msg = (char*)malloc(6);
+             strcpy(msg, "Stop!");
+             data_out -> write(msg);
         }
 
 	void notify_sending(){  

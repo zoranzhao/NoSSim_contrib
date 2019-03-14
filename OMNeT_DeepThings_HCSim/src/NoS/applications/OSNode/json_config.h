@@ -141,7 +141,9 @@ public:
          assert(item[i].IsString());
          (cluster->edge_type)[(cluster->edge_id)[i]] = item[i].GetString();
          std::cout << "Device type is: " << item[i].GetString() << std::endl;
+         std::cout << "Is victim or not: " << (std::string("victim") == std::string(item[i].GetString())) << std::endl;
          if(std::string("victim") == std::string(item[i].GetString())) data_source++;
+         std::cout << "data_source number is: " << data_source << std::endl;
       }
 
       item = d["edge"]["edge_core_number"];
