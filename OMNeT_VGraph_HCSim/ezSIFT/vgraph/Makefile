@@ -1,16 +1,16 @@
 DEBUG=0
 
-OBJ=ezsift.o image_utility.o
+OBJ=ezsift.o image_utility.o vgraph.o
 EXECOBJA=test.o
 
 INC_DIR=../include/
 SRC_DIR=../src/
-EXEC=vgraph
+EXEC=test_vgraph
 
 VPATH=./:$(INC_DIR):$(SRC_DIR)
 
-SLIB=lib${EXEC}.so
-ALIB=lib${EXEC}.a
+SLIB=libvgraph.so
+ALIB=libvgraph.a
 OBJDIR=./obj/
 
 CC=clang
@@ -30,10 +30,8 @@ endif
 CFLAGS+=$(OPTS)
 
 EXECOBJ = $(addprefix $(OBJDIR), $(EXECOBJA))
-EXECBC = $(EXECOBJ:.o=.bc) 
 EXECCPP = $(EXECOBJA:.o=.cpp) 
 OBJS = $(addprefix $(OBJDIR), $(OBJ))
-BYTECODES = $(OBJS:.o=.bc) 
 DEPS = $(wildcard $(SRC_DIR)/*.h) Makefile 
 
 all: obj $(SLIB) $(ALIB) $(EXEC)
