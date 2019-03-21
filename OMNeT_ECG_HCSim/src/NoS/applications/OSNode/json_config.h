@@ -99,6 +99,7 @@ public:
       for (SizeType i = 0; i < item.Size(); i++) {
          assert(item[i].IsString());
          (cluster->edge_ipv6_address)[(cluster->edge_id)[i]] = item[i].GetString();
+         (cluster->ipv6_address_to_id)[item[i].GetString()] = (cluster->edge_id)[i];
       }
 
       item = d["edge"]["edge_mac_address"];
