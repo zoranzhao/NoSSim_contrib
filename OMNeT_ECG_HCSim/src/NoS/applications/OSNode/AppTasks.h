@@ -75,7 +75,11 @@ class IntrDriven_Task :public sc_core::sc_module,virtual public HCSim::OS_TASK_I
         }
 
 #elif IPV6_TASK//IPV4_TASK
-	IP_ADDR6(&((lwip_context* )g_ctxt)->ipaddr,  1, 2, 3, (4 + node_id));
+        if(node_id == (sim_ctxt.cluster)->gateway_id){ 
+           IP_ADDR6(&((lwip_context* )g_ctxt)->ipaddr,  1, 2, 3, 3);
+        } else {
+           IP_ADDR6(&((lwip_context* )g_ctxt)->ipaddr,  1, 2, 3, (4 + node_id));
+        }
 #endif//IPV4_TASK
 	((lwip_context* )g_ctxt)->node_id = node_id;
         os_task_id = os_port->taskCreate(sc_core::sc_gen_unique_name("intrdriven_task"), 
