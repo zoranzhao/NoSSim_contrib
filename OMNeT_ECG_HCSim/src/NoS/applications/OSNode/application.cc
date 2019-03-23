@@ -229,7 +229,12 @@ void ecg_edge(uint32_t edge_id){
 
 void ecg_gateway_process(void *arg){
    ecg_context* ctxt = (ecg_context*)arg; 
+   #if IPV4_TASK
    const char* addr_list[MAX_EDGE_NUM] = {"192.168.4.9", "192.168.4.8", "192.168.4.4", "192.168.4.14", "192.168.4.15", "192.168.4.16"};
+   #else 
+   const char* addr_list[MAX_EDGE_NUM] = {"100:0:200:0:300:0:400:", "100:0:200:0:300:0:500:", "100:0:200:0:300:0:600:",
+                                           "100:0:200:0:300:0:700:", "100:0:200:0:300:0:800:", "100:0:200:0:300:0:900:"};
+   #endif
    offload_data* data[MAX_EDGE_NUM];
    result_data* results[MAX_EDGE_NUM];
    int node_id;
