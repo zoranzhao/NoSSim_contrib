@@ -8,7 +8,7 @@
 #define RESULT_COLLECT_PORT 11114 //Control the start and stop of a service
 #define WORK_STEAL_PORT 11115 //Control the start and stop of a service
 
-#define IPV4_TASK 1
+#define IPV4_TASK LWIP_IPV4
 #define IPV6_TASK !(IPV4_TASK)
 
 #if IPV4_TASK
