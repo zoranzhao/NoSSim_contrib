@@ -26,7 +26,7 @@ double *dbwavelet(double *conv) {
 
 	char db_num[4];
 	snprintf(db_num,4,"%d",wavelet);
-	char db_filters[20];
+	char db_filters[30];
 	strcpy(db_filters, "ecg_config/wavelets/db");
 	strcat(db_filters, db_num);
 
