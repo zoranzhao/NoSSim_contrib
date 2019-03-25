@@ -1,5 +1,4 @@
 #include "vgraph.h"
-#include "ezsift.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include <iostream>
@@ -44,6 +43,17 @@ unsigned char* kp_list_serialization(std::list<ezsift::SiftKeypoint> kpt_list){
    return data;
 }
 
+unsigned char* get_kp_raw_data(unsigned char* kp_data){
+   unsigned char* data_index = kp_data;
+   return data_index;
+}
+
+uint32_t get_kp_raw_size(unsigned char* kp_data){
+   uint32_t size;
+   unsigned char* data_index = kp_data;
+   memcpy(&(size), data_index, sizeof(uint32_t));
+   return size*sizeof(ezsift::SiftKeypoint)+sizeof(uint32_t);
+}
 
 uint32_t get_kp_size(unsigned char* kp_data){
    uint32_t size;
@@ -75,7 +85,6 @@ std::list<ezsift::SiftKeypoint> kp_list_deserialization(unsigned char* data){
       data_index = data_index + sizeof(ezsift::SiftKeypoint);
       kp_list.push_back(kp);
    }
-   free(data);
    return kp_list;
 }
 
@@ -83,7 +92,7 @@ unsigned char* keypoints_extraction(const char* filename){
     ezsift::Image<unsigned char> img;
     img = read_jpg(filename);
     std::list<ezsift::SiftKeypoint> kpt_list;
-    ezsift::double_original_image(true);
+    //ezsift::double_original_image(true);
     ezsift::sift_cpu(img, kpt_list, true);
     return kp_list_serialization(kpt_list);
 }
@@ -108,4 +117,34 @@ uint32_t keypoints_matching(unsigned char* kp_data1, unsigned char* kp_data2, co
     return (uint32_t)(match_list.size());
 }
 
+uint32_t keypoints_matching(unsigned char* kp_data1, unsigned char* kp_data2, int node1, int node2, int frame){
+    std::list<ezsift::SiftKeypoint> kpt_list1, kpt_list2;
+    kpt_list1 = kp_list_deserialization(kp_data1);
+    kpt_list2 = kp_list_deserialization(kp_data2);
+    std::list<ezsift::MatchPair> match_list;
+    ezsift::match_keypoints(kpt_list1, kpt_list2, match_list);
+
+    // Read two input images
+    ezsift::Image<unsigned char> image1, image2;
+    
+    std::string img1 = "data/input/Node" + std::to_string(node1) + "/" + std::to_string(frame)+".jpg";
+    std::string img2 = "data/input/Node" + std::to_string(node2) + "/" + std::to_string(frame)+".jpg";
+   
+    image1 = read_jpg(img1.c_str());
+    image2 = read_jpg(img2.c_str());
+
+    ezsift::draw_keypoints_to_ppm_file("sift_keypoints_a.ppm", image1,
+                                       kpt_list1);
+    ezsift::draw_keypoints_to_ppm_file("sift_keypoints_b.ppm", image2,
+                                       kpt_list2);
+    
+    std::string output_file = "sift_matching_" + std::to_string(node1) + "_" + std::to_string(node2) + "_frame_" + std::to_string(frame) + ".ppm";
+    
+    ezsift::draw_match_lines_to_ppm_file(output_file.c_str(), image1,
+                                         image2, match_list);
+    std::cout << "# of matched keypoints: "
+              << static_cast<unsigned int>(match_list.size()) << std::endl;
+
+    return (uint32_t)(match_list.size());
+}
 
