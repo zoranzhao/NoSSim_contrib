@@ -6,11 +6,11 @@ SLIB = libecg.so
 
 all: $(EXE)
 
-obj: ecg_flow.c mysqrs.c mywqrs.c mydwt.c svmpredict.c noiseremoval.c offload.c
-	$(CXX)  $(CFLAGS) -c ecg_flow.c mysqrs.c mywqrs.c mydwt.c svmpredict.c noiseremoval.c offload.c svm.cpp 
+obj: ecg_flow.c mysqrs.c mywqrs.c mydwt.c svmpredict.c noiseremoval.c offload.c profile.cpp
+	$(CXX)  $(CFLAGS) -c ecg_flow.c mysqrs.c mywqrs.c mydwt.c svmpredict.c noiseremoval.c offload.c svm.cpp profile.cpp 
 
 $(SLIB): obj
-	$(CXX) $(CFLAGS) -shared ecg_flow.o mysqrs.o mywqrs.o mydwt.o svmpredict.o noiseremoval.o offload.o svm.o -o $@
+	$(CXX) $(CFLAGS) -shared ecg_flow.o mysqrs.o mywqrs.o mydwt.o svmpredict.o noiseremoval.o offload.o svm.o profile.o -o $@
 
 $(EXE): $(SLIB)
 	$(CXX) $(CFLAGS) main.c -o ecg -lm -L. -Wl,-rpath,. -lecg
