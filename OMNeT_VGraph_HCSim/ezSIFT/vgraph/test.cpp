@@ -8,7 +8,7 @@
         September 15th, 2013: initial version.
         July 2nd, 2018: code refactor.
 */
-#include "vgraph.h"
+#include "vgraph_test.h"
 #include "profile.h"
 #include <iostream>
 

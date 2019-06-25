@@ -1,5 +1,6 @@
 #include "vgraph.h"
 #define STB_IMAGE_IMPLEMENTATION
+#include "ezsift.h"
 #include "stb_image.h"
 #include <iostream>
 
